@@ -3,7 +3,7 @@
 
 int main() {
     int num = 7;
-    int *pi = &num; // this * declares the pointer and then initializes it
+    int *pi = &num; // this * declares the pointer and &num initializes it
     *pi = 200; // However this statement assigns 200 to the variable pointed to by pi, changing its initial value
     int **pi_2 = &pi;
 
