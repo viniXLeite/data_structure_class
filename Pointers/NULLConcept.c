@@ -4,11 +4,11 @@
 
 int main() {
     int number = 10;
-    int* pi = NULL; // pi do not point to any memory address, we could also write pi = 0; in the next line instead or int *pi = 0;
+    int* pi = NULL; // pi does not point to any memory address, we could either write "pi = 0;" or "int *pi = 0;" 
                     // *pi = 0; this one would refer to the 0 integer
-    int ** pi_2 = &pi; // pi is storaged in some part of the memory, yet it does not point to any value 
+    int ** pi_2 = &pi; // pi is storaged in some part of the memory, although it does not point to any value 
     if (pi == NULL) 
-        printf("pi (pointer) has a NULL value\n");
+        printf("pi has a NULL value\n");
     else 
         printf("pi is a regular pointer\n");
 
