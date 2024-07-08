@@ -2,10 +2,10 @@
 
 int main() {
     int vector[] = {12, 34 , 6};
-    int *pi = vector; // when a pointer points to an array it will firstly be the initial value of this data structure 
+    int *pi = vector; // when a pointer to an array is declared it will firstly point the initial value of this data structure 
     printf("pi adress: %p\npi value: %p\nvalue of the element pointed by pi %d\n\n", &pi, pi, *pi); 
-    pi += 1;  // The amount added to pi will be 1 times sizeof(int) (which is the size of the array's type)
-             // In this integer's array case, pi's new value shall be pi + 4
+    pi += 1;  // The amount added to pi will be 1 times sizeof(int) (which is the size of the elements of the array)
+             // In this integer's array case, pi's new value shall be pi + 4 bytes
             // Pi points to the second array's element 
     printf("pi adress: %p\npi value: %p\nvalue of the element pointed by pi %d\n\n", &pi, pi, *pi);
     pi += 1; // Pi points to the third array's element
