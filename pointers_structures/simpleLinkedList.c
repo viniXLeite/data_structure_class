@@ -88,8 +88,10 @@ void displayLinkedList(LinkedList *list) {
     }
 }
 
-void disp() {
-    printf("OK\n");
+void deallocateList(LinkedList *list) {
+    free(list->current);
+    free(list->head);
+    free(list->tail);
 }
 
 int main() {
@@ -109,7 +111,9 @@ int main() {
 
     Node *node2 = getNode(listPointer, pv2);
     delete(listPointer, node2);
-
-    disp();
     displayLinkedList(listPointer);
+
+    //check is it's possible to deallocate the listpointer and the node2 pointer
+    deallocateList(listPointer);
+    return 0;
 }
