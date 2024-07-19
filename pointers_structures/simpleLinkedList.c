@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 typedef struct _node {
-    void *data;
+    int *data;
     struct _node *next;
 } Node;
 
@@ -19,7 +19,7 @@ void initializeList(LinkedList *list) {
     list->tail = NULL;
 }
 
-void addHead(LinkedList *list, void *data) {
+void addHead(LinkedList *list, int *data) {
     Node *node = (Node*) malloc(sizeof(Node));
     node->data = data;
     if (list->head == NULL) {
@@ -32,7 +32,7 @@ void addHead(LinkedList *list, void *data) {
     list->head = node;
 }
 
-void addTail(LinkedList *list, void *data) {
+void addTail(LinkedList *list, int *data) {
     Node *node = (Node*) malloc(sizeof(Node));
     node->data = data;
     node->next = NULL;
@@ -45,7 +45,7 @@ void addTail(LinkedList *list, void *data) {
     list->tail = node;
 }
 
-Node *getNode(LinkedList *list, void *data) {
+Node *getNode(LinkedList *list, int *data) {
     Node *node = list->head;
     while (node != NULL) {
         //Be careful when comparing strigs, for this pourpose use only the strcomp function
@@ -83,7 +83,33 @@ void displayLinkedList(LinkedList *list) {
     printf("\nLinked List\n");
     Node *current = list->head;
     while (current != NULL){
-        printf(current->data);
+        printf("data: %d\n", *(current->data));
         current = current->next;
     }
+}
+
+void disp() {
+    printf("OK\n");
+}
+
+int main() {
+    LinkedList List;
+    LinkedList *listPointer = &List;
+    int value1 = 23;
+    int value2 = 34;
+    int value3 = 45;
+    int *pv1 = &value1;
+    int *pv2 = &value2;
+    int *pv3 = &value3;
+
+    initializeList(listPointer);
+    addHead(listPointer, pv1);
+    addHead(listPointer, pv2);
+    addHead(listPointer, pv3);
+
+    Node *node2 = getNode(listPointer, pv2);
+    delete(listPointer, node2);
+
+    disp();
+    displayLinkedList(listPointer);
 }
