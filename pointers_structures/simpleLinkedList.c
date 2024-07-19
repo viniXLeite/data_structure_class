@@ -57,7 +57,7 @@ Node *getNode(LinkedList *list, int *data) {
     return NULL;
 }
 
-// Analise this function
+// Analyse this function
 void delete(LinkedList *list, Node *node) {
     if (node == list->head) {
         if (list->head->next == NULL) {
