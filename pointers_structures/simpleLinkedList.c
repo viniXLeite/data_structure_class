@@ -11,6 +11,7 @@
    -Implement a file's write and read system.
    -Only need to use one type of adding function, choose the best kind among these.
    -Search for solution of the deallocating structs problem.
+   -Change all the function and variables names and the logic of the conditionals
 */
 
 typedef struct _node {
@@ -49,24 +50,22 @@ void addTail(LinkedList *list, char *data) {
     Node *node = (Node*) malloc(sizeof(Node));
     node->data = (char*) malloc(sizeof(data)+1);
     strcpy(node->data, data);
-    // Modify this line to address the 'next' pointer to the list's head instead of null
-    // Declare a function get previous to run a loop until node != list->tail and then asign this node to node->previous O(n) 
-    // or see if it's possible to just use node->previous = list->tail and then list->tail = node 
-    node->next = NULL;
+    // Modify this line to address the node 'next' pointer to the list's head instead of Null
+    // In order to assign the previous pointer of the node to the previous node just do node->previous = list->tail and after that list->tail=node
+    // Then write node->next = list->head and list->head->previous = list->tail to turn it into a circular doubly linked list
     if (list->head == NULL) {
         list->head = node;
     }
     else {
         list->tail->next = node;
     }
+    node->next = NULL;
     list->tail = node;
 }
 
+// X
 Node *getNode(LinkedList *list, char *data) {
     Node *node = list->head;
-    // pay attention on the difference between while and do while
-    // while (node != Tail) and show the list->tail
-    // use a function like this to get the previous and next of a certain node data
     while (node != NULL) {
         //Be careful when comparing strigs, for this pourpose use only the strcomp function
         if (strcmp(node->data, data) == 0) {
@@ -99,7 +98,7 @@ void delete(LinkedList *list, Node *node) {
     free(node);
 }
 
-// X
+// To exibit the friends of the current node use current->next->data and current->previous->data
 void displayLinkedList(LinkedList *list) {
     printf("\nLinked List\n");
     Node *current = list->head;
@@ -109,12 +108,7 @@ void displayLinkedList(LinkedList *list) {
     }
 }
 
-void deallocateList(LinkedList *list) {
-    free(list->current);
-    free(list->head);
-    free(list->tail);
-}
-
+// No need to deallocate the pointer to the struct at the end of the application, because the operating system already does this
 int main() {
     LinkedList List;
     LinkedList *listPointer = &List;
@@ -131,7 +125,5 @@ int main() {
     delete(listPointer, node2);
     displayLinkedList(listPointer);
 
-    //check is it's possible to deallocate the listpointer and the node2 pointer
-    deallocateList(listPointer);
     return 0;
 }
