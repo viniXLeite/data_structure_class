@@ -18,7 +18,23 @@ void initializeLinkedList(LinkedList *list) {
     list->tail = NULL;
 }
 
+int traverse(LinkedList *list, char *name) {
+    if(strcmp(list->tail->name, name) == 0) {
+        return 1;
+    }
+    else {
+        Node *current = list->head;
+        while(current != list->tail) {
+            if(strcmp(current->name, name)==0)
+                return 1;
+            current = current->next;
+        }
+        return 0;
+    }
+}
+
 char* add(LinkedList *list, char *name) {
+    
     Node *node = (Node*) malloc(sizeof(Node));
     node->name = (char*) malloc(sizeof(name)+1);
     strcpy(node->name, name);
@@ -77,6 +93,7 @@ int main() {
     printf("%s\n", show(listPointer, "Maria"));
 
     printf("%s\n", add(listPointer, "Gabriel"));
+    printf("%s\n", show(listPointer, "Maria"));
     printf("%s\n", show(listPointer, "Gabriel"));
     printf("%s\n", add(listPointer, "Edward"));
 
