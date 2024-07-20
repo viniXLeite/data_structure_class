@@ -18,7 +18,7 @@ void initializeLinkedList(LinkedList *list) {
     list->tail = NULL;
 }
 
-void add(LinkedList *list, char *name) {
+char* add(LinkedList *list, char *name) {
     Node *node = (Node*) malloc(sizeof(Node));
     node->name = (char*) malloc(sizeof(name)+1);
     strcpy(node->name, name);
@@ -37,24 +37,27 @@ void add(LinkedList *list, char *name) {
         list->head->previous = node;
         list->tail = node;
     }
+    char *ok_add = (char*)malloc(15+sizeof(name));
+    sprintf(ok_add,"[ OK  ] ADD %s", name);
+    return(ok_add);
 }
 
 // make this function return a char* see test.c
 char* show(LinkedList *list, char *name) {
 
     if (strcmp(list->tail->name, name) == 0) {
-        char *ok_add = (char*)malloc(15+sizeof(list->tail->previous->name)+sizeof(list->tail->name)+sizeof(list->tail->next->name));
-        sprintf(ok_add,"[ OK  ] %s<-%s->%s", list->tail->previous->name, list->tail->name, list->tail->next->name);
-        return(ok_add);
+        char *ok_show = (char*)malloc(15+sizeof(list->tail->previous->name)+sizeof(list->tail->name)+sizeof(list->tail->next->name));
+        sprintf(ok_show,"[ OK  ] %s<-%s->%s", list->tail->previous->name, list->tail->name, list->tail->next->name);
+        return(ok_show);
     }
 
     else {
         Node *current = list->head;
         while(current != list->tail) {
             if(strcmp(current->name, name) == 0) {
-                char *ok_add = (char*)malloc(15+sizeof(current->previous->name)+sizeof(current->name)+sizeof(current->next->name));
-                sprintf(ok_add,"[ OK  ] %s<-%s->%s", current->previous->name, current->name, current->next->name);
-                return(ok_add); 
+                char *ok_show = (char*)malloc(15+sizeof(current->previous->name)+sizeof(current->name)+sizeof(current->next->name));
+                sprintf(ok_show,"[ OK  ] %s<-%s->%s", current->previous->name, current->name, current->next->name);
+                return(ok_show); 
             }
             current = current->next;
         }
@@ -70,9 +73,13 @@ int main() {
     LinkedList *listPointer = &list;
 
     initializeLinkedList(listPointer);
-    add(listPointer, "Maria");
-    add(listPointer, "Gabriel");
-    add(listPointer, "Edward");
+    printf("%s\n", add(listPointer, "Maria"));
+    printf("%s\n", show(listPointer, "Maria"));
+
+    printf("%s\n", add(listPointer, "Gabriel"));
+    printf("%s\n", show(listPointer, "Gabriel"));
+    printf("%s\n", add(listPointer, "Edward"));
+
     printf("%s\n", show(listPointer, "Maria"));
     printf("%s\n", show(listPointer, "Gabriel"));
     printf("%s\n", show(listPointer, "Edward"));

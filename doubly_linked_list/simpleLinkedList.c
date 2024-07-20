@@ -8,7 +8,6 @@
    -Pay attetion on adding a previous node pointer on Node Struct and connect it to other Node's objects.
    -Implement a file's write and read system.
    -Only need to use one type of adding function, choose the best kind among these.
-   -Search for solution of the deallocating structs problem.
    -Change all the function and variables names and the logic of the conditionals
 */
 
@@ -20,12 +19,10 @@ typedef struct _node {
 typedef struct _linkedList {
     Node *head;
     Node *tail;
-    Node *current;
 } LinkedList;
 
 void initializeList(LinkedList *list) {
     list->head = NULL;
-    list->current = NULL;
     list->tail = NULL;
 }
 
@@ -51,6 +48,8 @@ void addTail(LinkedList *list, char *data) {
     // Modify this line to address the node 'next' pointer to the list's head instead of Null
     // In order to assign the previous pointer of the node to the previous node just do node->previous = list->tail and after that list->tail=node
     // Then write node->next = list->head and list->head->previous = list->tail to turn it into a circular doubly linked list
+    // list->tail->next=node, node->previous = list->tail, node->next= list->head, list->head->previous=node, list->tail=node
+
     if (list->head == NULL) {
         list->head = node;
     }
@@ -96,6 +95,8 @@ void delete(LinkedList *list, Node *node) {
     free(node);
 }
 
+// Modify this function to accept a new argument that is the person's name and exibit one's previous and curent only 
+// use get node as reference and a return within the loop
 // To exibit the friends of the current node use current->next->data and current->previous->data
 void displayLinkedList(LinkedList *list) {
     printf("\nLinked List\n");
@@ -110,16 +111,13 @@ void displayLinkedList(LinkedList *list) {
 int main() {
     LinkedList List;
     LinkedList *listPointer = &List;
-    char value1[] = "Jose";
-    char value2[] = "Maria";
-    char value3[] = "Matheus";
 
     initializeList(listPointer);
-    addHead(listPointer, value1);
-    addHead(listPointer, value2);
-    addHead(listPointer, value3);
+    addHead(listPointer, "Jose");
+    addHead(listPointer, "Maria");
+    addHead(listPointer, "Matheus");
 
-    Node *node2 = getNode(listPointer, value2);
+    Node *node2 = getNode(listPointer, "Maria");
     delete(listPointer, node2);
     displayLinkedList(listPointer);
 
