@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-// Use string management of struc_t in order to fix this algorithm
-
 /* 
    -Then use this algorithm as referende to create a circular doubly linked list.
    -Firts Doubly and then circular
@@ -67,7 +65,7 @@ void addTail(LinkedList *list, char *data) {
 Node *getNode(LinkedList *list, char *data) {
     Node *node = list->head;
     while (node != NULL) {
-        //Be careful when comparing strigs, for this pourpose use only the strcomp function
+        //Be careful when comparing strigs, for this pourpose only use the strcomp function
         if (strcmp(node->data, data) == 0) {
             return node;
         }
