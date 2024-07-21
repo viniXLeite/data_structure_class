@@ -34,7 +34,7 @@ int traverse(LinkedList *list, char *name) {
 }
 
 char* add(LinkedList *list, char *name) {
-    
+
     Node *node = (Node*) malloc(sizeof(Node));
     node->name = (char*) malloc(sizeof(name)+1);
     strcpy(node->name, name);
@@ -47,12 +47,20 @@ char* add(LinkedList *list, char *name) {
     else {
         // Test if this sequence works on adding a new node to a sigle node circular doubly linked list
         // Test if you can drop out node->previous = list->tail; and node->next = list->head; of both conditionals since they declared twice
+
+        if(traverse(list, name) == 1) {
+            char *not_add = (char*) malloc(15+sizeof(name));
+            sprintf(not_add,"[ERROR] ADD %s", name);
+            return(not_add);
+        }
+
         list->tail->next = node;
         node->previous = list->tail;
         node->next = list->head;
         list->head->previous = node;
         list->tail = node;
     }
+
     char *ok_add = (char*)malloc(15+sizeof(name));
     sprintf(ok_add,"[ OK  ] ADD %s", name);
     return(ok_add);
@@ -79,9 +87,9 @@ char* show(LinkedList *list, char *name) {
         }
     }
 
-    char *error_add = (char*)malloc(16+sizeof(name));
-    sprintf(error_add,"[ERROR] ?<-%s->?", name);
-    return(error_add);
+    char *error_show = (char*)malloc(16+sizeof(name));
+    sprintf(error_show,"[ERROR] ?<-%s->?", name);
+    return(error_show);
 }
 
 int main() {
@@ -97,10 +105,16 @@ int main() {
     printf("%s\n", show(listPointer, "Gabriel"));
     printf("%s\n", add(listPointer, "Edward"));
 
+    printf("%s\n", add(listPointer, "Gabriel"));
+    printf("%s\n", add(listPointer, "Joseph"));
+    printf("%s\n", add(listPointer, "Edward"));
+
+
     printf("%s\n", show(listPointer, "Maria"));
     printf("%s\n", show(listPointer, "Gabriel"));
     printf("%s\n", show(listPointer, "Edward"));
     printf("%s\n", show(listPointer, "Teo"));
+    printf("%s\n", show(listPointer, "Joseph"));
 
     return 0;
 }
