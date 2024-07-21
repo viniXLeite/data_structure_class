@@ -92,6 +92,20 @@ char* show(LinkedList *list, char *name) {
     return(error_show);
 }
 
+char* remove_node(LinkedList *list, char *name) {
+    // if name in list
+        // if node == list->head: node->next->previous = list->tail, list->tail->next = node->next, list->head = node->next, node->next = NULL, node->previous = NULL, free(node)
+    
+        // elif node == list->tail: node->previous->next = list->head, list->head->previous = node->previous, list->tail = node->previous, node->next = NULL, node->previous = NULL, free(node)
+    
+        // else: node->previous->next = node->next, node->next->previous = node->previous, node->previous = NULL, node->next NULL, free(node)
+        
+        //[ok] remove name
+
+    // else
+        // error remove name
+}
+
 int main() {
     LinkedList list;
     LinkedList *listPointer = &list;
