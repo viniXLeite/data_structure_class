@@ -3,7 +3,7 @@
 #include <string.h>
 
 typedef struct _node {
-    char *name;
+    char name[51];
     struct _node *previous;
     struct _node *next;
 } Node;
@@ -36,7 +36,7 @@ Node *traverseList(LinkedList *list, char *name) {
 char* add(LinkedList *list, char *name) {
 
     Node *node = (Node*) malloc(sizeof(Node));
-    node->name = (char*) malloc(sizeof(name)+1);
+    //node->name = (char*) malloc(sizeof(name)+1);
     strcpy(node->name, name);
     if (list->head == NULL) {
         list->head = node;
@@ -49,7 +49,7 @@ char* add(LinkedList *list, char *name) {
         // Test if you can drop out node->previous = list->tail; and node->next = list->head; of both conditionals since they declared twice
 
         if(traverseList(list, name) != NULL) {
-            char *not_add = (char*) malloc(15+sizeof(name));
+            char *not_add = (char*) malloc(66);
             sprintf(not_add,"[ERROR] ADD %s", name);
             return(not_add);
         }
@@ -61,7 +61,7 @@ char* add(LinkedList *list, char *name) {
         list->tail = node;
     }
 
-    char *ok_add = (char*)malloc(15+sizeof(name));
+    char *ok_add = (char*)malloc(66);
     sprintf(ok_add,"[ OK  ] ADD %s", name);
     return(ok_add);
 }
@@ -70,7 +70,7 @@ char* add(LinkedList *list, char *name) {
 char* show(LinkedList *list, char *name) {
 
     if (strcmp(list->tail->name, name) == 0) {
-        char *ok_show = (char*)malloc(15+sizeof(list->tail->previous->name)+sizeof(list->tail->name)+sizeof(list->tail->next->name));
+        char *ok_show = (char*)malloc(60+sizeof(list->tail->previous->name)+sizeof(list->tail->name)+sizeof(list->tail->next->name));
         sprintf(ok_show,"[ OK  ] %s<-%s->%s", list->tail->previous->name, list->tail->name, list->tail->next->name);
         return(ok_show);
     }
@@ -79,7 +79,7 @@ char* show(LinkedList *list, char *name) {
         Node *current = list->head;
         while(current != list->tail) {
             if(strcmp(current->name, name) == 0) {
-                char *ok_show = (char*)malloc(15+sizeof(current->previous->name)+sizeof(current->name)+sizeof(current->next->name));
+                char *ok_show = (char*)malloc(60+sizeof(current->previous->name)+sizeof(current->name)+sizeof(current->next->name));
                 sprintf(ok_show,"[ OK  ] %s<-%s->%s", current->previous->name, current->name, current->next->name);
                 return(ok_show); 
             }
@@ -87,12 +87,12 @@ char* show(LinkedList *list, char *name) {
         }
     }
 
-    char *error_show = (char*)malloc(16+sizeof(name));
+    char *error_show = (char*)malloc(72);
     sprintf(error_show,"[ERROR] ?<-%s->?", name);
     return(error_show);
 }
 
-void remove_node(LinkedList *list, char *name) {
+char* remove_node(LinkedList *list, char *name) {
     // if list->head == NULL: return;
     //else
         // if name in list
@@ -106,8 +106,12 @@ void remove_node(LinkedList *list, char *name) {
 
         // else
             // error remove name
-    if(list->head == NULL)
-        return;
+    if(list->head == NULL) {
+        char *error_remove = (char*)malloc(72);
+        sprintf(error_remove,"[ERROR] REMOVE %s", name);
+        return(error_remove);
+    }
+
     else {
         Node *node = traverseList(list, name);
         if(node != NULL) {
@@ -115,25 +119,28 @@ void remove_node(LinkedList *list, char *name) {
                 node->next->previous = list->tail;
                 list->tail->next = node->next;
                 list->head = node->next;
-                //node->next = NULL;
-                //node->previous = NULL;
-                free(node);
             }
             else if(node == list->tail) {
                 node->previous->next = list->head;
                 list->head->previous = node->previous;
                 list->tail = node->previous;
-                free(node);
+
             }
             else {
                 node->previous->next = node->next;
                 node->next->previous = node->previous;
-                free(node);
             }
-            printf("%s deleted from list\n", name);
+            node->next = NULL;
+            node->previous = NULL;
+            free(node);
+            char *ok_remove = (char*)malloc(72);
+            sprintf(ok_remove,"[ OK  ] REMOVE %s", name);
+            return(ok_remove);
         }
         else {
-            printf("%s not in list\n", name);
+            char *error_remove = (char*)malloc(72);
+            sprintf(error_remove,"[ERROR] REMOVE %s", name);
+            return(error_remove);
         }
     }
 }
@@ -159,7 +166,9 @@ int main() {
 
     printf("%s\n", show(listPointer, "Edward"));
 
-    remove_node(listPointer, "Guilherme");
+    printf("%s\n", remove_node(listPointer, "Guilherme"));
+    printf("%s\n", remove_node(listPointer, "Xijaho Ebozahyf Teci Ehiguzuhyb"));
+    printf("%s\n", add(listPointer, "Xijaho Ebozahyf Teci Ehiguzuhyb"));
 
     printf("%s\n", show(listPointer, "Maria"));
     printf("%s\n", show(listPointer, "Gabriel"));
