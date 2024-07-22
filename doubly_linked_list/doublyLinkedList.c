@@ -138,6 +138,37 @@ int main(int argc, char* argv[]) {
 
     initializeLinkedList(listPointer);
 
+	FILE* input = fopen(argv[1], "r");
+	FILE* output = fopen(argv[2], "w");
+
+    char commandLine[70];
+    char *command, *name;
+
+    if(input != NULL) {
+        while(fgets(commandLine, 70, input)) {
+            command = strtok(commandLine, " ");
+            name = strtok(NULL, "");
+            size_t len = strlen(name);
+            name[len-1] = '\0';
+
+            if (commandLine[0] == 'A') {
+                printf("%s\n", add(listPointer, name));
+                fprintf(output, "%s\n", add(listPointer, name));
+            }
+            else if (commandLine[0] == 'S') {
+                printf("%s\n", show(listPointer, name));
+                fprintf(output, "%s\n", show(listPointer, name));
+            }
+            else {
+                printf("%s\n", remove_node(listPointer, name));
+                fprintf(output, "%s\n", remove_node(listPointer, name));
+            }
+        }
+    }
+
+    // Close the file
+    fclose(input); 
+    fclose(output);
 
     return 0;
 }
