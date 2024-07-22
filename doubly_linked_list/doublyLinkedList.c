@@ -132,39 +132,12 @@ char* remove_node(LinkedList *list, char *name) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     LinkedList list;
     LinkedList *listPointer = &list;
 
     initializeLinkedList(listPointer);
-    printf("%s\n", add(listPointer, "Maria"));
-    printf("%s\n", show(listPointer, "Maria"));
-    printf("%s\n", add(listPointer, "Maria"));
 
-    printf("%s\n", add(listPointer, "Gabriel"));
-    printf("%s\n", show(listPointer, "Maria"));
-    printf("%s\n", show(listPointer, "Gabriel"));
-    printf("%s\n", add(listPointer, "Edward"));
-
-    printf("%s\n", add(listPointer, "Gabriel"));
-    printf("%s\n", add(listPointer, "Joseph"));
-    printf("%s\n", add(listPointer, "Edward"));
-    printf("%s\n", add(listPointer, "Guilherme"));
-
-    printf("%s\n", show(listPointer, "Edward"));
-
-    printf("%s\n", remove_node(listPointer, "Guilherme"));
-    printf("%s\n", remove_node(listPointer, "Leqyfesyb Tulof Feqem Citeku"));
-    printf("%s\n", add(listPointer, "Xijaho Ebozahyf Teci Ehiguzuhyb"));
-    printf("%s\n", add(listPointer, "Cisywycip Gylowynyti Ehiguzuhyb"));
-    printf("%s\n", add(listPointer, "Oboryg Zorezacam Wogytuliw Kexumity"));
-
-    printf("%s\n", show(listPointer, "Maria"));
-    printf("%s\n", show(listPointer, "Gabriel"));
-    printf("%s\n", show(listPointer, "Edward"));
-    printf("%s\n", show(listPointer, "Guilherme"));
-    printf("%s\n", show(listPointer, "Joseph"));
-    printf("%s\n", show(listPointer, "Cisywycip Gylowynyti Ehiguzuhyb"));
 
     return 0;
 }
