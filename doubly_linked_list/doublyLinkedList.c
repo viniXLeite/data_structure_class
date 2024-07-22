@@ -93,19 +93,6 @@ char* show(LinkedList *list, char *name) {
 }
 
 char* remove_node(LinkedList *list, char *name) {
-    // if list->head == NULL: return;
-    //else
-        // if name in list
-            // if node == list->head: node->next->previous = list->tail, list->tail->next = node->next, list->head = node->next, node->next = NULL, node->previous = NULL, free(node)
-        
-            // elif node == list->tail: node->previous->next = list->head, list->head->previous = node->previous, list->tail = node->previous, node->next = NULL, node->previous = NULL, free(node)
-        
-            // else: node->previous->next = node->next, node->next->previous = node->previous, node->previous = NULL, node->next NULL, free(node)
-            
-            //[ok] remove name
-
-        // else
-            // error remove name
     if(list->head == NULL) {
         char *error_remove = (char*)malloc(72);
         sprintf(error_remove,"[ERROR] REMOVE %s", name);
@@ -167,14 +154,17 @@ int main() {
     printf("%s\n", show(listPointer, "Edward"));
 
     printf("%s\n", remove_node(listPointer, "Guilherme"));
-    printf("%s\n", remove_node(listPointer, "Xijaho Ebozahyf Teci Ehiguzuhyb"));
+    printf("%s\n", remove_node(listPointer, "Leqyfesyb Tulof Feqem Citeku"));
     printf("%s\n", add(listPointer, "Xijaho Ebozahyf Teci Ehiguzuhyb"));
+    printf("%s\n", add(listPointer, "Cisywycip Gylowynyti Ehiguzuhyb"));
+    printf("%s\n", add(listPointer, "Oboryg Zorezacam Wogytuliw Kexumity"));
 
     printf("%s\n", show(listPointer, "Maria"));
     printf("%s\n", show(listPointer, "Gabriel"));
     printf("%s\n", show(listPointer, "Edward"));
     printf("%s\n", show(listPointer, "Guilherme"));
     printf("%s\n", show(listPointer, "Joseph"));
+    printf("%s\n", show(listPointer, "Cisywycip Gylowynyti Ehiguzuhyb"));
 
     return 0;
 }
