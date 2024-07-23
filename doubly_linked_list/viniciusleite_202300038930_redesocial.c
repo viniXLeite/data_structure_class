@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* In this so called project, I've used two structs, one named Node that represents the people registed on 
+poxim's social network and another one tha represesents the social network itself (which have Node type pointers, 
+one for head and other for the tail of the list). In order execute the actions ADD, REMOVE and SHOW, I've declared functions
+that take a LinkedList type pointer and a person's name as argument, treated them and returned formated strings, 
+that later on were written to a file.*/
+
+
 typedef struct _node {
     char name[51];
     struct _node *previous;
@@ -13,11 +20,13 @@ typedef struct _circularDoublyLinkedList {
     Node *tail;
 } LinkedList;
 
+
 void initializeLinkedList(LinkedList *list) {
     list->head = NULL;
     list->tail = NULL;
 }
 
+// return the node related to the person's name or NULL if this one is not registed
 Node *traverseList(LinkedList *list, char *name) {
     if(strcmp(list->tail->name, name) == 0) {
         return list->tail;
@@ -33,10 +42,10 @@ Node *traverseList(LinkedList *list, char *name) {
     }
 }
 
-char* add(LinkedList *list, char *name) {
 
+char* add(LinkedList *list, char *name) {
     Node *node = (Node*) malloc(sizeof(Node));
-    //node->name = (char*) malloc(sizeof(name)+1);
+    // This conditional treats the empty list case
     strcpy(node->name, name);
     if (list->head == NULL) {
         list->head = node;
@@ -45,8 +54,6 @@ char* add(LinkedList *list, char *name) {
         node->previous = list->tail;
     }
     else {
-        // Test if this sequence works on adding a new node to a sigle node circular doubly linked list
-        // Test if you can drop out node->previous = list->tail; and node->next = list->head; of both conditionals since they declared twice
 
         if(traverseList(list, name) != NULL) {
             char *not_add = (char*) malloc(66);
@@ -61,19 +68,22 @@ char* add(LinkedList *list, char *name) {
         list->tail = node;
     }
 
+    // malloc sufficient space to set a string message output
     char *ok_add = (char*)malloc(66);
     sprintf(ok_add,"[ OK  ] ADD %s", name);
     return(ok_add);
 }
 
-// make this function return a char* see test.c
+
 char* show(LinkedList *list, char *name) {
+    // This conditional treats the empty list case
     if (list->head == NULL) {
         char *error_show = (char*)malloc(72);
         sprintf(error_show,"[ERROR] ?<-%s->?", name);
         return(error_show);
     }
 
+    // Check if the name is equal the list head's name
     else if (strcmp(list->tail->name, name) == 0) {
         char *ok_show = (char*)malloc(60+sizeof(list->tail->previous->name)+sizeof(list->tail->name)+sizeof(list->tail->next->name));
         sprintf(ok_show,"[ OK  ] %s<-%s->%s", list->tail->previous->name, list->tail->name, list->tail->next->name);
@@ -92,12 +102,14 @@ char* show(LinkedList *list, char *name) {
         }
     }
 
+    // Return error if the name is not registed on the linked list
     char *error_show = (char*)malloc(72);
     sprintf(error_show,"[ERROR] ?<-%s->?", name);
     return(error_show);
 }
 
 char* remove_node(LinkedList *list, char *name) {
+    // This conditional treats the empty list case
     if(list->head == NULL) {
         char *error_remove = (char*)malloc(72);
         sprintf(error_remove,"[ERROR] REMOVE %s", name);
@@ -105,8 +117,10 @@ char* remove_node(LinkedList *list, char *name) {
     }
 
     else {
+        // check if the person is registed
         Node *node = traverseList(list, name);
         if(node != NULL) {
+            
             if(node == list->head) {
                 node->next->previous = list->tail;
                 list->tail->next = node->next;
@@ -140,7 +154,6 @@ char* remove_node(LinkedList *list, char *name) {
 int main(int argc, char* argv[]) {
     LinkedList list;
     LinkedList *listPointer = &list;
-
     initializeLinkedList(listPointer);
 
 	FILE* input = fopen(argv[1], "r");
@@ -148,7 +161,6 @@ int main(int argc, char* argv[]) {
 
     char commandLine[70];
     char *command, *name;
-
 
     while(fgets(commandLine, sizeof(commandLine), input)) {
         command = strtok(commandLine, " ");
@@ -167,12 +179,8 @@ int main(int argc, char* argv[]) {
             fprintf(output, "%s\n", remove_node(listPointer, name));
         }
     }
-        
-    
-
-    // Close the file
+            
     fclose(input); 
     fclose(output);
-
     return 0;
 }
