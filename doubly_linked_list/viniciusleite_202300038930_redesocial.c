@@ -168,7 +168,7 @@ int main(int argc, char* argv[]) {
         name = strtok(NULL, "");
         size_t len = strlen(name);
         if(name[len-1] == '\n')
-		name[len-1] = '\0';
+		    name[len-1] = '\0';
 
         if (commandLine[0] == 'A') {
             printf("%s\n", command);
