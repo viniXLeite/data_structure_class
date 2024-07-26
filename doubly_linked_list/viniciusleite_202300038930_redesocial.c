@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* In this so called project, I've used two structs, one named Node that represents the people registed on 
+/* In this so called social network project, I've used two structs, one named Node that represents the people registed on 
 poxim's social network and another one that represesents the social network itself (which have Node type pointers, 
 one for the head and other for the tail of the linked list). In order execute the actions ADD, REMOVE and SHOW, I've declared functions
 that take a LinkedList type pointer and a person's name as argument, treated them and returned formated strings, 
@@ -150,6 +150,7 @@ char* remove_node(LinkedList *list, char *name) {
         }
     }
 }
+
 
 int main(int argc, char* argv[]) {
     LinkedList list;
