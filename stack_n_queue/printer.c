@@ -48,6 +48,7 @@ void initialize_Queue(Queue *queueList) {
 }
 
 
+
 void addStack(Stack *stackList, char *name) {
     StackNode *stackNode = (StackNode*) malloc(sizeof(StackNode));
     stackNode->docName = (char*) malloc(sizeof(name));
@@ -84,6 +85,7 @@ void addQueue(Queue *queueList, char *name) {
     queueList->tail = queueNode;
 }
 
+
 // Removes tail
 void removeStack(Stack *stackList) {
     if (stackList->head == NULL) {
@@ -114,14 +116,17 @@ void removeQueue(Queue *queueList) {
 // It must read the first line and use it as a iteration limit to catch the printers names
 // New line, read the number and use the same logic to get the docNames 
 int main() {
-    Stack printedPapers;
-    Stack *printedPapers_Pointer = &printedPapers;
+    int printedPages = 0;
 
-    Queue docName;
-    Queue *docName_Pointer = &docName;
+    Stack printedPapersStack;
+    Stack *printedPapersStack_Pointer = &printedPapersStack;
 
-    addStack(printedPapers_Pointer, "doc1");
-    addQueue(docName_Pointer, "doc1");
+    Queue docNameQueue;
+    Queue *docNameQueue_Pointer = &docNameQueue;
+
+
+    addStack(printedPapersStack_Pointer, "doc1");
+    addQueue(docNameQueue_Pointer, "doc1");
 
     return 0;
 }
