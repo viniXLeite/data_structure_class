@@ -22,8 +22,7 @@ typedef struct _stack {
     StackNode *tail;
 } Stack;
 
-
-
+// Add a int printing attribute
 typedef struct _queueNode {
     char *docName;
     struct _queueNode *next; 
@@ -46,7 +45,6 @@ void initialize_Queue(Queue *queueList) {
     queueList->head = NULL;
     queueList->tail = NULL;
 }
-
 
 
 void addStack(Stack *stackList, char *name) {
@@ -86,7 +84,8 @@ void addQueue(Queue *queueList, char *name) {
 }
 
 
-// Removes tail
+// Funtion that removes stack's tail
+// See this function is really necessaty maybe just need to implement a pop stack one
 void removeStack(Stack *stackList) {
     if (stackList->head == NULL) {
         return;
@@ -95,11 +94,14 @@ void removeStack(Stack *stackList) {
         StackNode *node = stackList->tail;
         stackList->tail->previous->next = NULL;
         stackList->tail = stackList->tail->previous;
+        // See if it's possible to assign node->previous to NULL
         free(node);
     }
 }
 
-// Removes Head
+// Funtion that removes queue's head
+// Add a case when tries to remove a one-element queue, should it assign list-head to NUlLL?
+// Maybe count the number of nodes added to the queue
 void removeQueue(Queue *queueList) {
     if (queueList->head == NULL) {
         return;
@@ -108,6 +110,7 @@ void removeQueue(Queue *queueList) {
         QueueNode *node = queueList->head;
         queueList->head->next->previous = NULL;
         queueList->head = queueList->head->next;
+        // See if it's possible to assign node->next to NULL
         free(node);
     }
 }
@@ -118,15 +121,22 @@ void removeQueue(Queue *queueList) {
 int main() {
     int printedPages = 0;
 
+    // Use the file system to save the printers's names to an array of printers
+    // Save the documents on a queue and dequeue every time the document is sent to a printer
+    // While (queue->head != NULL) {take the documents, choose an available printer, print(every time the printer attribute printing is 0, choose another file)
+    // save it to a stack, increment the pages' counter, show the printer1s name ++ printed document-documentPages}
+    // Show the pages's counter++p, and the printed files++documentPages
+
     Stack printedPapersStack;
     Stack *printedPapersStack_Pointer = &printedPapersStack;
 
     Queue docNameQueue;
     Queue *docNameQueue_Pointer = &docNameQueue;
 
-
-    addStack(printedPapersStack_Pointer, "doc1");
     addQueue(docNameQueue_Pointer, "doc1");
+    addQueue(docNameQueue_Pointer, "doc2");
+    addQueue(docNameQueue_Pointer, "doc3");
+    addQueue(docNameQueue_Pointer, "doc4");
 
     return 0;
 }
