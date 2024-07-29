@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 // The documents firstly must be organized in a queue structure
 // The file and printers' names may have letters and numbers
@@ -25,14 +26,21 @@ typedef struct _stack {
 // Add a int printing attribute
 typedef struct _queueNode {
     char *docName;
+    int number_pages;
     struct _queueNode *next; 
     struct _queueNode *previous;
 } QueueNode;
 
 typedef struct _queue {
     QueueNode *head;
+    QueueNode *current;
     QueueNode *tail;
 } Queue;
+
+typedef struct _printer {
+    char *printerName;
+    unsigned short position;
+} Printer;
 
 
 
@@ -46,6 +54,11 @@ void initialize_Queue(Queue *queueList) {
     queueList->tail = NULL;
 }
 
+void initialize_printersSlot(int printersSlot[], int number_printers) {
+    for(int i=0; i <= number_printers; i++) {
+        printersSlot[i] = 0;
+    }
+}
 
 void addStack(Stack *stackList, char *name) {
     StackNode *stackNode = (StackNode*) malloc(sizeof(StackNode));
@@ -65,10 +78,11 @@ void addStack(Stack *stackList, char *name) {
     stackList->tail = stackNode;
 }
 
-void addQueue(Queue *queueList, char *name) {
+void addQueue(Queue *queueList, char *name, int number_pages) {
     QueueNode *queueNode = (QueueNode*) malloc(sizeof(QueueNode));
     queueNode->docName = (char*) malloc(sizeof(name));
     strcpy(queueNode->docName, name);
+    queueNode->number_pages = number_pages;
 
     if (queueList->head == NULL) {
         queueList->head = queueNode;
@@ -115,9 +129,46 @@ void removeQueue(Queue *queueList) {
     }
 }
 
-// Implement the read and write system
-// It must read the first line and use it as a iteration limit to catch the printers names
-// New line, read the number and use the same logic to get the docNames 
+void traverseQueue(Queue *queue) {
+    QueueNode *node = queue->head;
+    while(node != queue->tail) {
+        printf("%s\n", node->docName);
+        node = node->next;
+    }
+    printf("%s\n", queue->tail->docName);
+}
+
+void docDistributuion(int printersSlot[], int number_printers, Queue* docQueue) {
+
+    for(int i = 0; i <= number_printers-1; i++) {
+        if(printersSlot[i] == 0) {
+            if(docQueue->current == docQueue->tail) {
+                printersSlot[i] = docQueue->current->number_pages;
+                return;
+            }
+            else {
+                printersSlot[i] = docQueue->current->number_pages;
+                docQueue->current = docQueue->current->next;
+            }
+        }
+    }
+}
+
+int lowestArrayNumber(int printersSlot[], int number_printers) {
+    int lowest = printersSlot[0];
+    for(int i=0; i <= number_printers-1; i++) {
+        if(printersSlot[i] <= lowest)
+            lowest = printersSlot[i];
+    }
+    // Subtract lowest
+    return lowest;
+}
+
+void subtract_number_array(int printersSlot[], int number_printers, int lowestArrayNumber) {
+    for(int i=0; i <= number_printers-1; i++) 
+        printersSlot[i] = printersSlot[i]-lowestArrayNumber;
+}
+
 int main() {
     int printedPages = 0;
 
@@ -129,14 +180,86 @@ int main() {
 
     Stack printedPapersStack;
     Stack *printedPapersStack_Pointer = &printedPapersStack;
+    initialize_Stack(printedPapersStack_Pointer);
 
     Queue docNameQueue;
     Queue *docNameQueue_Pointer = &docNameQueue;
+    initialize_Queue(docNameQueue_Pointer);
 
-    addQueue(docNameQueue_Pointer, "doc1");
-    addQueue(docNameQueue_Pointer, "doc2");
-    addQueue(docNameQueue_Pointer, "doc3");
-    addQueue(docNameQueue_Pointer, "doc4");
+    int number_printers = 5;
+    int printersSlot[number_printers];
+    initialize_printersSlot(printersSlot, number_printers);
+
+    addQueue(docNameQueue_Pointer, "doc1", 7);
+    addQueue(docNameQueue_Pointer, "doc2", 5);
+    addQueue(docNameQueue_Pointer, "doc3", 12);
+    addQueue(docNameQueue_Pointer, "doc4", 25);
+    addQueue(docNameQueue_Pointer, "doc5", 6);
+    addQueue(docNameQueue_Pointer, "doc6", 9);
+    addQueue(docNameQueue_Pointer, "doc7", 7);
+    addQueue(docNameQueue_Pointer, "doc8", 12);
+    addQueue(docNameQueue_Pointer, "doc9", 5);
+    addQueue(docNameQueue_Pointer, "doc10", 9);
+    addQueue(docNameQueue_Pointer, "doc1", 4);
+    addQueue(docNameQueue_Pointer, "doc2", 5);
+    addQueue(docNameQueue_Pointer, "doc3", 2);
+
+
+    docNameQueue_Pointer->current = docNameQueue_Pointer->head;
+
+    //traverseQueue(docNameQueue_Pointer);
+    docDistributuion(printersSlot, number_printers, docNameQueue_Pointer);
+
+    int lowestNumber;
+    QueueNode* node = docNameQueue_Pointer->head;
+
+    printf("%s, %d\n", docNameQueue_Pointer->tail->docName, docNameQueue_Pointer->tail->number_pages);
+
+    for(int i=0; i <= number_printers-1; i++) {
+        printf("%d ", printersSlot[i]);
+    }
+
+    while(1) {
+        lowestNumber = lowestArrayNumber(printersSlot, number_printers);
+        subtract_number_array(printersSlot, number_printers, lowestNumber);
+
+        //printf("%s => %d\n\n", node->docName, node->number_pages);
+
+        printf("\n");
+        for(int i=0; i <= number_printers-1; i++) {
+            printf("%d ", printersSlot[i]);
+        }
+
+        docDistributuion(printersSlot, number_printers, docNameQueue_Pointer);
+
+        printf("\n");
+        for(int i=0; i <= number_printers-1; i++) {
+            printf("%d ", printersSlot[i]);
+        }
+        if(docNameQueue_Pointer->current == docNameQueue_Pointer->tail) {
+            lowestNumber = lowestArrayNumber(printersSlot, number_printers);
+            subtract_number_array(printersSlot, number_printers, lowestNumber);
+
+            printf("\n");
+            for(int i=0; i <= number_printers-1; i++) {
+                printf("%d ", printersSlot[i]);
+            }
+
+            docDistributuion(printersSlot, number_printers, docNameQueue_Pointer);
+
+            printf("\n");
+            for(int i=0; i <= number_printers-1; i++) {
+                printf("%d ", printersSlot[i]);
+            }
+
+            break;
+        }
+        else
+            node = node->next;
+    // Find out why the iteration is not working properly, it makes the last distrubuition n keep sustituing the tail->number_doc
+    // Im distribuiting with queue->current and iterating with node
+    // implement a funtion to sum all the doc->numberpages
+    }
 
     return 0;
 }
