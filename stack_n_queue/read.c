@@ -3,36 +3,36 @@
 #include <string.h>
 
 
-typedef struct _fileLine {
+typedef struct _Document {
     int linesNumber;
     char** linesArray;
 
-} FileLine;
+} Document;
 
 
-FileLine getFileLines(FILE* input) {
+Document getDocuments(FILE* input) {
     char commandLine[10];
     char nameLine[51];
-    FileLine fileLine;
+    Document Document;
 
     if(fgets(commandLine, sizeof(commandLine), input)) {
         char charCommandsNumber = commandLine[0];
         int commandsNumber = charCommandsNumber - '0';
 
-        fileLine.linesNumber = commandsNumber;
-        fileLine.linesArray = malloc(commandsNumber*sizeof(char*)+1);
+        Document.linesNumber = commandsNumber;
+        Document.linesArray = malloc(commandsNumber*sizeof(char*)+1);
 
         for(int i = 0; i < commandsNumber; i++) {
             if (fgets(nameLine, sizeof(nameLine), input)) {
-                fileLine.linesArray[i] = malloc(sizeof(nameLine)+1);
+                Document.linesArray[i] = malloc(sizeof(nameLine)+1);
 
                 if(nameLine[strlen(nameLine)-1] == '\n') nameLine[strlen(nameLine)-1] = '\0';
-                strcpy(fileLine.linesArray[i], nameLine);
+                strcpy(Document.linesArray[i], nameLine);
             }
         }
     }
 
-    return fileLine;
+    return Document;
 }
 
 //int get_docPages()
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 	FILE* input = fopen(argv[1], "r");
 	FILE* output = fopen(argv[2], "w");
 
-    FileLine printers = getFileLines(input);
+    Document printers = getDocuments(input);
     printf("%d\n", printers.linesNumber);
     for(int i = 0; i <= printers.linesNumber-1; i++) {
         printf("%s\n", printers.linesArray[i]);
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 
     printf("\n");
 
-    FileLine documents = getFileLines(input);
+    Document documents = getDocuments(input);
     printf("%d\n", documents.linesNumber);
     for(int i = 0; i <= documents.linesNumber-1; i++) {
         printf("%s\n", documents.linesArray[i]);

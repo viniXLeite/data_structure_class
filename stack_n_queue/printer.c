@@ -252,10 +252,16 @@ int main() {
                 printf("%d ", printersSlot[i]);
             }
 
+            lowestNumber = lowestArrayNumber(printersSlot, number_printers);
+            subtract_number_array(printersSlot, number_printers, lowestNumber);
+
+            printf("\n");
+            for(int i=0; i <= number_printers-1; i++) {
+                printf("%d ", printersSlot[i]);
+            }
+
             break;
         }
-        else
-            node = node->next;
     // Find out why the iteration is not working properly, it makes the last distrubuition n keep sustituing the tail->number_doc
     // Im distribuiting with queue->current and iterating with node
     // implement a funtion to sum all the doc->numberpages
