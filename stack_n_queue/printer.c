@@ -14,12 +14,14 @@
 
 typedef struct _stackNode {
    char *docName;
+   int pagesNumber;
    struct _stackNode *next;
    struct _stackNode *previous;
 } StackNode;
 
 typedef struct _stack {
    StackNode *head;
+   StackNode *current;
    StackNode *tail;
 } Stack;
 
@@ -42,10 +44,10 @@ typedef struct _printing_document {
    int number_pages;
 } Printing;
 
-typedef struct _Printers {
+typedef struct _LineFile {
     int linesNumber;
     char** linesArray;
-    int *numberPrinters;
+    int *numberPages;
 
 } LineFile;
 
@@ -71,11 +73,11 @@ void initialize_printersSlot(int printersSlot[], int number_printers, Queue* doc
 }
 
 
-void addStack(Stack *stackList, char *name) {
+void addStack(Stack *stackList, char *name, int pagesNumber) {
     StackNode *stackNode = (StackNode*) malloc(sizeof(StackNode));
     stackNode->docName = (char*) malloc(sizeof(name));
     strcpy(stackNode->docName, name);
-
+    stackNode->pagesNumber = pagesNumber;
 
     if(stackList->head == NULL) {
         stackList->head = stackNode;
@@ -129,9 +131,10 @@ void removeStack(Stack *stackList) {
 }
 
 
-void docDistributuion(int printersSlot[], int number_printers, Queue* docQueue, Printing* printing, char** printersName) {
+void docDistributuion(int printersSlot[], int number_printers, Queue* docQueue, Printing* printing, char** printersName, Stack* printedPaperStack) {
     for(int i = 0; i <= number_printers-1; i++) {
         if(printersSlot[i] == 0) {
+            addStack(printedPaperStack, printing[i].docName, printing[i].number_pages);
             printf("[%s] %s-%dp\n", printersName[i], printing[i].docName, printing[i].number_pages);
             if(docQueue->current == docQueue->tail) {
                 printersSlot[i] = docQueue->current->number_pages;
@@ -167,10 +170,11 @@ void subtract_number_array(int printersSlot[], int number_printers, int lowestAr
 }
 
 
-void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName) {
+void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack *printedPaperStack) {
     for(int i = 0; i <= number_printers-1; i++) {
         if(printersSlot[i] == 0) {
-           printf("[%s] %s-%d", printersName[i], printing[i].docName, printing[i].number_pages);
+            addStack(printedPaperStack, printing->docName, printing->number_pages);
+            printf("[%s] %s-%d", printersName[i], printing[i].docName, printing[i].number_pages);
         }
     }
 }
@@ -184,7 +188,6 @@ int last_lowestArrayNumber(int printersSlot[], int number_printers) {
                 lowest = printersSlot[i];
         }
     }
-    // Subtract lowest
     return lowest;
 }
 
@@ -246,6 +249,7 @@ int main(int argc, char* argv[]) {
     char *docName, *numberPagesStr;
     char numberPagesChar;
     int number_Pages;
+    int all_number_pages = 0;
 
     int printedPages = 0;
     int number_printers = printers.linesNumber;
@@ -256,34 +260,35 @@ int main(int argc, char* argv[]) {
     LineFile documents = getFileLines(input);
 
     for(int i = 0; i <= documents.linesNumber-1; i++) {
-        documents.numberPrinters = (int*) malloc(10);
+        documents.numberPages = (int*) malloc(10);
         docName = strtok(documents.linesArray[i], " ");
         numberPagesStr = strtok(NULL, "");
         numberPagesChar = numberPagesStr[0];
         number_Pages = numberPagesChar - '0';
-        documents.numberPrinters[i] = number_Pages;
-        addQueue(docNameQueue_Pointer, documents.linesArray[i], documents.numberPrinters[i]);
+        documents.numberPages[i] = number_Pages;
+        all_number_pages += number_Pages;
+        addQueue(docNameQueue_Pointer, documents.linesArray[i], documents.numberPages[i]);
     }
 
-    char *printersName[51] = {"jatodetinta", "laser"};
+    char *printersName[51] = {"jatodetinta", "laser"}; // Atualize this variable
+
     docNameQueue_Pointer->current = docNameQueue_Pointer->head;
     initialize_printersSlot(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents);
 
     while(1) {
         lowestNumber = lowestArrayNumber(printersSlot, number_printers);
         subtract_number_array(printersSlot, number_printers, lowestNumber);
-        docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName);
+        docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName, printedPapersStack_Pointer);
 
         if(docNameQueue_Pointer->current == docNameQueue_Pointer->tail) {
             lowestNumber = lowestArrayNumber(printersSlot, number_printers);
             subtract_number_array(printersSlot, number_printers, lowestNumber);
-            docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName);
+            docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName, printedPapersStack_Pointer);
 
             for(int i = 0; i <= number_printers-2; i++) {
-
                 lowestNumber = lowestArrayNumber(printersSlot, number_printers);
                 subtract_number_array(printersSlot, number_printers, lowestNumber);
-                last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printersName);
+                last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printersName, printedPapersStack_Pointer);
                 replaceZeros(printersSlot, number_printers);
                 printf("\n");
             }
@@ -292,8 +297,21 @@ int main(int argc, char* argv[]) {
         }
 
     }
-    
-    printf("\nnumero de paginas impressas-p\n");
+
+    printf("%d-p\n", all_number_pages);
+    printedPapersStack_Pointer->current = printedPapersStack_Pointer->tail;
+
+    while(1) {
+        if (printedPapersStack_Pointer->current == printedPapersStack_Pointer->head) {
+            printf("%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
+            break;
+        }
+        else {
+            printf("%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
+            printedPapersStack_Pointer->current = printedPapersStack_Pointer->current->previous;
+        }
+    }
+
     fclose(input); 
     fclose(output);
 
