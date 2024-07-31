@@ -270,7 +270,10 @@ int main(int argc, char* argv[]) {
         addQueue(docNameQueue_Pointer, documents.linesArray[i], documents.numberPages[i]);
     }
 
-    char *printersName[51] = {"jatodetinta", "laser"}; // Atualize this variable
+    char *printersName[51]; 
+    for(int i = 0; i <= number_printers-1; i++) {
+        printersName[i] = printers.linesArray[i];
+    }
 
     docNameQueue_Pointer->current = docNameQueue_Pointer->head;
     initialize_printersSlot(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents);
