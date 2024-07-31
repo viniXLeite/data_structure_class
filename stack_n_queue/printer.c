@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-
 // The documents firstly must be organized in a queue structure
 // The file and printers' names may have letters and numbers
 // The number of pages related to each file will set a limit for some iteration
@@ -48,14 +47,7 @@ typedef struct _Printers {
     char** linesArray;
     int *numberPrinters;
 
-} Printers;
-
-typedef struct _Document {
-    int linesNumber;
-    char** linesArray;
-    int *number_document;
-
-} Document;
+} LineFile;
 
 
 void initialize_Stack(Stack *stackList) {
@@ -68,6 +60,7 @@ void initialize_Queue(Queue *queueList) {
    queueList->tail = NULL;
 }
 
+
 void initialize_printersSlot(int printersSlot[], int number_printers, Queue* docQueue, Printing *printing) {
     for(int i=0; i <= number_printers-1; i++) {
         printersSlot[i] = docQueue->current->number_pages;
@@ -76,6 +69,7 @@ void initialize_printersSlot(int printersSlot[], int number_printers, Queue* doc
         docQueue->current = docQueue->current->next;
     }
 }
+
 
 void addStack(Stack *stackList, char *name) {
     StackNode *stackNode = (StackNode*) malloc(sizeof(StackNode));
@@ -134,6 +128,7 @@ void removeStack(Stack *stackList) {
     }
 }
 
+
 void docDistributuion(int printersSlot[], int number_printers, Queue* docQueue, Printing* printing, char** printersName) {
     for(int i = 0; i <= number_printers-1; i++) {
         if(printersSlot[i] == 0) {
@@ -171,13 +166,6 @@ void subtract_number_array(int printersSlot[], int number_printers, int lowestAr
         printersSlot[i] = printersSlot[i]-lowestArrayNumber;
 }
 
-void last_subtract_number_array(int printersSlot[], int number_printers, int lowestArrayNumber) {
-    for(int i=0; i <= number_printers-1; i++) {
-        if (printersSlot != 0) {
-            printersSlot[i] = printersSlot[i]-lowestArrayNumber;
-        }
-    }
-}
 
 void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName) {
     for(int i = 0; i <= number_printers-1; i++) {
@@ -186,6 +174,7 @@ void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber
         }
     }
 }
+
 
 int last_lowestArrayNumber(int printersSlot[], int number_printers) {
     int lowest = printersSlot[0];
@@ -199,6 +188,7 @@ int last_lowestArrayNumber(int printersSlot[], int number_printers) {
     return lowest;
 }
 
+
 void replaceZeros(int printersSlot[], int number_ṕrinters) {
     for(int i = 0; i <= number_ṕrinters-1; i++) {
         if(printersSlot[i] == 0) 
@@ -206,70 +196,37 @@ void replaceZeros(int printersSlot[], int number_ṕrinters) {
     }
 }
 
-Printers getPrinters(FILE* input) {
+
+LineFile getFileLines(FILE* input) {
     char commandLine[10];
     char nameLine[51];
-    Printers Printers;
+    LineFile LineFile;
 
     if(fgets(commandLine, sizeof(commandLine), input)) {
         char charCommandsNumber = commandLine[0];
         int commandsNumber = charCommandsNumber - '0';
 
-        Printers.linesNumber = commandsNumber;
-        Printers.linesArray = malloc(commandsNumber*sizeof(char*)+1);
+        LineFile.linesNumber = commandsNumber;
+        LineFile.linesArray = malloc(commandsNumber*sizeof(char*)+1);
 
         for(int i = 0; i < commandsNumber; i++) {
             if (fgets(nameLine, sizeof(nameLine), input)) {
-                Printers.linesArray[i] = malloc(sizeof(nameLine)+1);
+                LineFile.linesArray[i] = malloc(sizeof(nameLine)+1);
 
                 if(nameLine[strlen(nameLine)-1] == '\n') nameLine[strlen(nameLine)-1] = '\0';
-                strcpy(Printers.linesArray[i], nameLine);
+                strcpy(LineFile.linesArray[i], nameLine);
             }
         }
     }
 
-    return Printers;
+    return LineFile;
 }
 
-Document getDocuments(FILE* input) {
-    char commandLine[10];
-    char nameLine[51];
-    Document Document;
-    char *docName, *numberPagesStr;
-    char numberPagesChar;
-    int number_Pages;
-
-    if(fgets(commandLine, sizeof(commandLine), input)) {
-        char charCommandsNumber = commandLine[0];
-        int commandsNumber = charCommandsNumber - '0';
-
-        Document.linesNumber = commandsNumber;
-        Document.linesArray = malloc(commandsNumber*sizeof(char*)+1);
-
-        for(int i = 0; i < commandsNumber; i++) {
-            if (fgets(nameLine, sizeof(nameLine), input)) {
-                Document.linesArray[i] = malloc(sizeof(nameLine)+1);
-                if(nameLine[strlen(nameLine)-1] == '\n') nameLine[strlen(nameLine)-1] = '\0';
-                strcpy(Document.linesArray[i], nameLine);
-                docName = strtok(Document.linesArray[i], " ");
-                numberPagesStr = strtok(NULL, "");
-                numberPagesChar = numberPagesStr[0];
-                number_Pages = numberPagesChar - '0';
-                Document.number_document[i] = number_Pages;
-
-            }
-        }
-    }
-
-    return Document;
-}
 
 int main(int argc, char* argv[]) {
-
+    
     FILE* input = fopen(argv[1], "r");
     FILE* output = fopen(argv[2], "w");
-
-    int printedPages = 0;
 
     // Use the file system to save the printers's names to an array of printers
     // Save the documents on a queue and dequeue every time the document is sent to a printer
@@ -284,16 +241,22 @@ int main(int argc, char* argv[]) {
     Queue docNameQueue;
     Queue *docNameQueue_Pointer = &docNameQueue;
     initialize_Queue(docNameQueue_Pointer);
+    LineFile printers = getFileLines(input);
 
     char *docName, *numberPagesStr;
     char numberPagesChar;
     int number_Pages;
 
-    Printers printers = getPrinters(input);
+    int printedPages = 0;
+    int number_printers = printers.linesNumber;
+    int printersSlot[number_printers];
+    int lowestNumber;
+    
+    Printing printed_Documents[number_printers];
+    LineFile documents = getFileLines(input);
 
-    Printers documents = getPrinters(input);
     for(int i = 0; i <= documents.linesNumber-1; i++) {
-        documents.numberPrinters = (int*) malloc(30);
+        documents.numberPrinters = (int*) malloc(10);
         docName = strtok(documents.linesArray[i], " ");
         numberPagesStr = strtok(NULL, "");
         numberPagesChar = numberPagesStr[0];
@@ -302,18 +265,9 @@ int main(int argc, char* argv[]) {
         addQueue(docNameQueue_Pointer, documents.linesArray[i], documents.numberPrinters[i]);
     }
 
-
-    int number_printers = printers.linesNumber;
-    int printersSlot[number_printers];
-    Printing printed_Documents[number_printers];
-
     char *printersName[51] = {"jatodetinta", "laser"};
-
     docNameQueue_Pointer->current = docNameQueue_Pointer->head;
     initialize_printersSlot(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents);
-
-    int lowestNumber;
-    QueueNode* node = docNameQueue_Pointer->head;
 
     while(1) {
         lowestNumber = lowestArrayNumber(printersSlot, number_printers);
@@ -327,8 +281,8 @@ int main(int argc, char* argv[]) {
 
             for(int i = 0; i <= number_printers-2; i++) {
 
-                lowestNumber = last_lowestArrayNumber(printersSlot, number_printers);
-                last_subtract_number_array(printersSlot, number_printers, lowestNumber);
+                lowestNumber = lowestArrayNumber(printersSlot, number_printers);
+                subtract_number_array(printersSlot, number_printers, lowestNumber);
                 last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printersName);
                 replaceZeros(printersSlot, number_printers);
                 printf("\n");
