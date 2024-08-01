@@ -32,6 +32,7 @@ typedef struct _queue {
 
 typedef struct _printing_document {
    char docName[51];
+   char **all_docs;
    int number_pages;
 } Printing;
 
@@ -41,12 +42,6 @@ typedef struct _LineFile {
     int *numberPages;
 
 } LineFile;
-
-typedef struct printer_log {
-    char *docNames[51];
-    unsigned int current_index;
-    unsigned int number_docs;
-} PrinterLog;
 
 
 void initialize_Stack(Stack *stackList) {
@@ -59,10 +54,6 @@ void initialize_Queue(Queue *queueList) {
    queueList->tail = NULL;
 }
 
-void initialize_printerLog(PrinterLog log) {
-    log.current_index = 0;
-    log.number_docs = 0;
-}
 
 void initialize_printersSlot(int printersSlot[], int number_printers, Queue* docQueue, Printing *printing) {
     for(int i=0; i <= number_printers-1; i++) {
@@ -132,11 +123,25 @@ void removeStack(Stack *stackList) {
 }
 
 
-void docDistributuion(int printersSlot[], int number_printers, Queue* docQueue, Printing* printing, char** printersName, Stack* printedPaperStack) {
+void docDistributuion(int printersSlot[], int number_printers, Queue* docQueue, Printing* printing, char** printersName, Stack* printedPaperStack, Stack** printLogs) {
+    // find out why it's not printing the first printers name, maybe turn it iont a function parameter
     for(int i = 0; i <= number_printers-1; i++) {
         if(printersSlot[i] == 0) {
             addStack(printedPaperStack, printing[i].docName, printing[i].number_pages);
-            printf("[%s] %s-%dp\n", printersName[i], printing[i].docName, printing[i].number_pages);
+            addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
+            //printf("[%s] %s-%dp\n", printersName[i], printing[i].docName, printing[i].number_pages);
+            StackNode* node = printLogs[i]->tail;
+            printf("[%s] ", printersName[i]);
+            while (node != NULL) {
+                if (node->docName != NULL)
+                    printf("%s-%dp ", node->docName, node->pagesNumber);
+                if (node == printLogs[i]->head) {
+                    break;
+                }
+                node = node->previous;
+            }
+            printf("\n");
+
             if(docQueue->current == docQueue->tail) {
                 printersSlot[i] = docQueue->current->number_pages;
                 strcpy(printing[i].docName, docQueue->current->docName);
@@ -160,7 +165,8 @@ int lowestArrayNumber(int printersSlot[], int number_printers) {
         if(printersSlot[i] <= lowest)
             lowest = printersSlot[i];
     }
-    // Subtract lowest
+    // Subtract lowest                prependName(buffer[i], printing[i].docName);
+
     return lowest;
 }
 
@@ -171,11 +177,23 @@ void subtract_number_array(int printersSlot[], int number_printers, int lowestAr
 }
 
 
-void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack *printedPaperStack) {
+void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack *printedPaperStack, Stack** printLogs) {
     for(int i = 0; i <= number_printers-1; i++) {
         if(printersSlot[i] == 0) {
             addStack(printedPaperStack, printing->docName, printing->number_pages);
-            printf("[%s] %s-%d", printersName[i], printing[i].docName, printing[i].number_pages);
+            addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
+            StackNode* node = printLogs[i]->tail;
+            printf("[%s] ", printersName[i]);
+            while (node != NULL) {
+                if (node->docName != NULL)
+                    printf("%s-%dp ", node->docName, node->pagesNumber);
+                if (node == printLogs[i]->head) {
+                    break;
+                }
+                node = node->previous;
+            }
+            printf("\n");
+            //printf("[%s] %s-%d", printersName[i], printing[i].docName, printing[i].number_pages);
         }
     }
 }
@@ -226,18 +244,6 @@ LineFile getFileLines(FILE* input) {
     return LineFile;
 }
 
-void add_DocLog(PrinterLog printLog, char* formated_doc) {
-    printLog.docNames[printLog.current_index] = (char *)malloc(sizeof(formated_doc)+1);
-    strcpy(printLog.docNames[printLog.current_index], formated_doc);
-    printLog.current_index += 1;
-    printLog.current_index += 1;
-}
-
-void showLog(PrinterLog printingLog, unsigned int index) {
-    for(int i = 0; i <= printingLog.number_docs-1; i++) {
-
-    }
-}
 
 int main(int argc, char* argv[]) {
     
@@ -247,6 +253,11 @@ int main(int argc, char* argv[]) {
     Stack printedPapersStack;
     Stack *printedPapersStack_Pointer = &printedPapersStack;
     initialize_Stack(printedPapersStack_Pointer);
+
+    Stack printLog;
+    Stack *printLog_pointer = &printLog;
+    initialize_Stack(printLog_pointer);
+    Stack** printLogs = &printLog_pointer;
 
     Queue docNameQueue;
     Queue *docNameQueue_Pointer = &docNameQueue;
@@ -288,17 +299,17 @@ int main(int argc, char* argv[]) {
     while(1) {
         lowestNumber = lowestArrayNumber(printersSlot, number_printers);
         subtract_number_array(printersSlot, number_printers, lowestNumber);
-        docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName, printedPapersStack_Pointer);
+        docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName, printedPapersStack_Pointer, printLogs);
 
         if(docNameQueue_Pointer->current == docNameQueue_Pointer->tail) {
             lowestNumber = lowestArrayNumber(printersSlot, number_printers);
             subtract_number_array(printersSlot, number_printers, lowestNumber);
-            docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName, printedPapersStack_Pointer);
+            docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName, printedPapersStack_Pointer, printLogs);
 
             for(int i = 0; i <= number_printers-2; i++) {
                 lowestNumber = lowestArrayNumber(printersSlot, number_printers);
                 subtract_number_array(printersSlot, number_printers, lowestNumber);
-                last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printersName, printedPapersStack_Pointer);
+                last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printersName, printedPapersStack_Pointer, printLogs);
                 replaceZeros(printersSlot, number_printers);
                 printf("\n");
             }
