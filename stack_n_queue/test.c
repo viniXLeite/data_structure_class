@@ -15,11 +15,15 @@ void prependName(char *dest, const char *name) {
     sprintf(dest, "%s %s", name, temp);
 }
 
+// Add -np at the end of each name
+// varAux = (char*) malloc(sizeof(name)+15);
+// pass varAux in prependName
+
 int main() {
     char buffer[MAX_BUFFER_SIZE] = ""; // Inicializa o buffer vazio
 
     // Nomes para serem adicionados
-    const char *names[] = {"Alice ", "Bob ", "Charlie ", "calr ", "ewfef ", "ewffwef "};
+    const char *names[] = {"Alice-2p", "Bob-3p", "Charlie", "calr", "ewfef", "ewffwef"};
     size_t numNames = sizeof(names) / sizeof(names[0]);
 
     // Adiciona os nomes no buffer em um laço

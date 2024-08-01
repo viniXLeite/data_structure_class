@@ -193,8 +193,8 @@ int last_lowestArrayNumber(int printersSlot[], int number_printers) {
 }
 
 
-void replaceZeros(int printersSlot[], int number_ṕrinters) {
-    for(int i = number_ṕrinters-1; i <= ; i++) {
+void replaceZeros(int printersSlot[], int number_printers) {
+    for(int i = 0; i <= number_printers-1; i++) {
         if(printersSlot[i] == 0) 
             printersSlot[i] = 1000000;
     }
