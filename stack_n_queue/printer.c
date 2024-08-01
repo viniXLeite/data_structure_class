@@ -3,14 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-// The documents firstly must be organized in a queue structure
-// The file and printers' names may have letters and numbers
-// The number of pages related to each file will set a limit for some iteration
-// There must be a stack to organize the printed papers
-// Output [file_name] [numb of pages]
-// Allocate the printer's name in a vector of strings
-// Before the next iteration and after the first check if each printers is available
-// [printer1, printer2, printer3]
 
 typedef struct _stackNode {
    char *docName;
@@ -25,7 +17,6 @@ typedef struct _stack {
    StackNode *tail;
 } Stack;
 
-// Add a int printing attribute
 typedef struct _queueNode {
    char *docName;
    int number_pages;
@@ -51,6 +42,12 @@ typedef struct _LineFile {
 
 } LineFile;
 
+typedef struct printer_log {
+    char *docNames[51];
+    unsigned int current_index;
+    unsigned int number_docs;
+} PrinterLog;
+
 
 void initialize_Stack(Stack *stackList) {
    stackList->head = NULL;
@@ -62,6 +59,10 @@ void initialize_Queue(Queue *queueList) {
    queueList->tail = NULL;
 }
 
+void initialize_printerLog(PrinterLog log) {
+    log.current_index = 0;
+    log.number_docs = 0;
+}
 
 void initialize_printersSlot(int printersSlot[], int number_printers, Queue* docQueue, Printing *printing) {
     for(int i=0; i <= number_printers-1; i++) {
@@ -193,7 +194,7 @@ int last_lowestArrayNumber(int printersSlot[], int number_printers) {
 
 
 void replaceZeros(int printersSlot[], int number_ṕrinters) {
-    for(int i = 0; i <= number_ṕrinters-1; i++) {
+    for(int i = number_ṕrinters-1; i <= ; i++) {
         if(printersSlot[i] == 0) 
             printersSlot[i] = 1000000;
     }
@@ -225,17 +226,23 @@ LineFile getFileLines(FILE* input) {
     return LineFile;
 }
 
+void add_DocLog(PrinterLog printLog, char* formated_doc) {
+    printLog.docNames[printLog.current_index] = (char *)malloc(sizeof(formated_doc)+1);
+    strcpy(printLog.docNames[printLog.current_index], formated_doc);
+    printLog.current_index += 1;
+    printLog.current_index += 1;
+}
+
+void showLog(PrinterLog printingLog, unsigned int index) {
+    for(int i = 0; i <= printingLog.number_docs-1; i++) {
+
+    }
+}
 
 int main(int argc, char* argv[]) {
     
     FILE* input = fopen(argv[1], "r");
     FILE* output = fopen(argv[2], "w");
-
-    // Use the file system to save the printers's names to an array of printers
-    // Save the documents on a queue and dequeue every time the document is sent to a printer
-    // While (queue->head != NULL) {take the documents, choose an available printer, print(every time the printer attribute printing is 0, choose another file)
-    // save it to a stack, increment the pages' counter, show the printer1s name ++ printed document-documentPages}
-    // Show the pages's counter++p, and the printed files++documentPages
 
     Stack printedPapersStack;
     Stack *printedPapersStack_Pointer = &printedPapersStack;
