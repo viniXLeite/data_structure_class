@@ -32,7 +32,7 @@ typedef struct _queue {
 
 typedef struct _printing_document {
    char docName[51];
-   char **all_docs;
+   //char **all_docs;
    int number_pages;
 } Printing;
 
@@ -54,21 +54,26 @@ void initialize_Queue(Queue *queueList) {
    queueList->tail = NULL;
 }
 
-
-void initialize_printersSlot(int printersSlot[], int number_printers, Queue* docQueue, Printing *printing) {
-    for(int i=0; i <= number_printers-1; i++) {
-        printersSlot[i] = docQueue->current->number_pages;
-        strcpy(printing[i].docName, docQueue->current->docName);
-        printing[i].number_pages = docQueue->current->number_pages;
-        docQueue->current = docQueue->current->next;
-    }
-}
-
-
 void addStack(Stack *stackList, char *name, int pagesNumber) {
+    // Alocar memória para o novo node
     StackNode *stackNode = (StackNode*) malloc(sizeof(StackNode));
-    stackNode->docName = (char*) malloc(sizeof(name));
+    if (stackNode == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para StackNode\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Alocar memória para o docName
+    stackNode->docName = (char*) malloc(strlen(name) + 1);
+    if (stackNode->docName == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para docName\n");
+        free(stackNode);
+        exit(EXIT_FAILURE);
+    }
+
+    // Copiar o nome do documento
     strcpy(stackNode->docName, name);
+
+    // Configurar o número de páginas
     stackNode->pagesNumber = pagesNumber;
 
     if(stackList->head == NULL) {
@@ -88,23 +93,78 @@ void addStack(Stack *stackList, char *name, int pagesNumber) {
 
 
 void addQueue(Queue *queueList, char *name, int number_pages) {
+    // Alocar memória para o novo node
     QueueNode *queueNode = (QueueNode*) malloc(sizeof(QueueNode));
-    queueNode->docName = (char*) malloc(sizeof(name));
+    if (queueNode == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para QueueNode\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Alocar memória para o docName
+    queueNode->docName = (char*) malloc(strlen(name) + 1);
+    if (queueNode->docName == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para docName\n");
+        free(queueNode);
+        exit(EXIT_FAILURE);
+    }
+
+    // Copiar o nome do documento
     strcpy(queueNode->docName, name);
+
+    // Configurar o número de páginas
     queueNode->number_pages = number_pages;
+    queueNode->next = NULL;
 
-
+    // Adicionar o node à fila
     if (queueList->head == NULL) {
         queueList->head = queueNode;
         queueNode->previous = NULL;
-    }
-    else {
+    } else {
         queueList->tail->next = queueNode;
         queueNode->previous = queueList->tail;
     }
 
-    queueNode->next = NULL;
     queueList->tail = queueNode;
+}
+
+int queue_size(Queue* queue) {
+    int size = 0;
+    QueueNode* current = queue->head; // Supondo que 'head' aponta para o início da fila
+    while (current != NULL) {
+        size++;
+        current = current->next;
+    }
+    return size;
+}
+
+void initialize_printersSlot(int printersSlot[], int number_printers, Queue* docQueue, Printing *printing) {
+    int size = queue_size(docQueue);
+    printf("Tamanho da fila: %d\n", size);
+    if (size < number_printers) {
+        fprintf(stderr, "Erro: docQueue não contém elementos suficientes.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    docQueue->current = docQueue->head; // Certifique-se de começar do início da fila
+
+    for (int i = 0; i < number_printers; i++) {
+        if (docQueue->current == NULL) {
+            fprintf(stderr, "Erro inesperado: docQueue ficou vazia.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        printersSlot[i] = docQueue->current->number_pages;
+
+        // Certifique-se de que printing[i].docName está alocado corretamente
+        if (printing[i].docName == NULL) {
+            fprintf(stderr, "Erro: docName não foi alocado para a impressora %d.\n", i);
+            exit(EXIT_FAILURE);
+        }
+
+        strcpy(printing[i].docName, docQueue->current->docName);
+        printing[i].number_pages = docQueue->current->number_pages;
+        docQueue->current = docQueue->current->next;
+    }
 }
 
 // Funtion that removes stack's tail
@@ -177,10 +237,9 @@ void subtract_number_array(int printersSlot[], int number_printers, int lowestAr
 }
 
 
-void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack *printedPaperStack, Stack** printLogs) {
+void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack** printLogs) {
     for(int i = 0; i <= number_printers-1; i++) {
         if(printersSlot[i] == 0) {
-            addStack(printedPaperStack, printing->docName, printing->number_pages);
             addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
             StackNode* node = printLogs[i]->tail;
             printf("[%s] ", printersName[i]);
@@ -222,26 +281,46 @@ void replaceZeros(int printersSlot[], int number_printers) {
 LineFile getFileLines(FILE* input) {
     char commandLine[10];
     char nameLine[51];
-    LineFile LineFile;
+    LineFile lineFile = {0, NULL};
 
-    if(fgets(commandLine, sizeof(commandLine), input)) {
-        char charCommandsNumber = commandLine[0];
-        int commandsNumber = charCommandsNumber - '0';
+    if (fgets(commandLine, sizeof(commandLine), input)) {
+        int commandsNumber = atoi(commandLine);
 
-        LineFile.linesNumber = commandsNumber;
-        LineFile.linesArray = malloc(commandsNumber*sizeof(char*)+1);
+        lineFile.linesNumber = commandsNumber;
+        lineFile.linesArray = malloc(commandsNumber * sizeof(char*));
 
-        for(int i = 0; i < commandsNumber; i++) {
+        if (lineFile.linesArray == NULL) {
+            fprintf(stderr, "Erro ao alocar memória para linesArray\n");
+            exit(EXIT_FAILURE);
+        }
+
+        for (int i = 0; i < commandsNumber; i++) {
             if (fgets(nameLine, sizeof(nameLine), input)) {
-                LineFile.linesArray[i] = malloc(sizeof(nameLine)+1);
+                size_t len = strlen(nameLine);
 
-                if(nameLine[strlen(nameLine)-1] == '\n') nameLine[strlen(nameLine)-1] = '\0';
-                strcpy(LineFile.linesArray[i], nameLine);
+                if (nameLine[len - 1] == '\n') {
+                    nameLine[len - 1] = '\0';
+                    len--;
+                }
+
+                lineFile.linesArray[i] = malloc((len + 1) * sizeof(char));
+                if (lineFile.linesArray[i] == NULL) {
+                    fprintf(stderr, "Erro ao alocar memória para linesArray[%d]\n", i);
+                    exit(EXIT_FAILURE);
+                }
+
+                strcpy(lineFile.linesArray[i], nameLine);
+            } else {
+                fprintf(stderr, "Erro ao ler a linha %d\n", i);
+                exit(EXIT_FAILURE);
             }
         }
+    } else {
+        fprintf(stderr, "Erro ao ler o comando inicial\n");
+        exit(EXIT_FAILURE);
     }
 
-    return LineFile;
+    return lineFile;
 }
 
 
@@ -264,6 +343,8 @@ int main(int argc, char* argv[]) {
     initialize_Queue(docNameQueue_Pointer);
     LineFile printers = getFileLines(input);
 
+
+
     char *docName, *numberPagesStr;
     char numberPagesChar;
     int number_Pages;
@@ -271,26 +352,54 @@ int main(int argc, char* argv[]) {
 
     int printedPages = 0;
     int number_printers = printers.linesNumber;
+    
+    printf("--Numero de impressoras = %d--\n", number_printers);
+    for(int i = 0; i < number_printers; i++) {
+        printf("Impressora: %s\n", printers.linesArray[i]);
+    }
+
     int printersSlot[number_printers];
     int lowestNumber;
     
     Printing printed_Documents[number_printers];
     LineFile documents = getFileLines(input);
+    fclose(input);
 
-    for(int i = 0; i <= documents.linesNumber-1; i++) {
-        documents.numberPages = (int*) malloc(10);
-        docName = strtok(documents.linesArray[i], " ");
-        numberPagesStr = strtok(NULL, "");
-        numberPagesChar = numberPagesStr[0];
-        number_Pages = numberPagesChar - '0';
-        documents.numberPages[i] = number_Pages;
-        all_number_pages += number_Pages;
-        addQueue(docNameQueue_Pointer, documents.linesArray[i], documents.numberPages[i]);
+    for (int i = 0; i < documents.linesNumber; i++) {
+        printf("Linha %d: %s\n", i + 1, documents.linesArray[i]);
+        free(documents.linesArray[i]);
     }
 
-    char *printersName[51]; 
-    for(int i = 0; i <= number_printers-1; i++) {
-        printersName[i] = printers.linesArray[i];
+    // Alocar memória para todos os elementos de numberPages fora do loop
+    documents.numberPages = (int*) malloc(documents.linesNumber * sizeof(int));
+    if (documents.numberPages == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para documents.numberPages\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < documents.linesNumber; i++) {
+        docName = strtok(documents.linesArray[i], " ");
+        numberPagesStr = strtok(NULL, "");
+    
+        // Verificação para garantir que numberPagesStr não seja NULL
+        if (numberPagesStr != NULL) {
+            number_Pages = atoi(numberPagesStr);  // Converter a string inteira para um número inteiro
+            documents.numberPages[i] = number_Pages;
+            all_number_pages += number_Pages;
+            addQueue(docNameQueue_Pointer, documents.linesArray[i], documents.numberPages[i]);
+        }
+        else {
+            fprintf(stderr, "Erro ao processar a linha %d: formato inválido\n", i);
+            documents.numberPages[i] = 0;  // Definir um valor padrão ou tratar o erro conforme necessário
+        }
+    }
+
+    printf("Tamango do docQueue--%d--\n", queue_size(docNameQueue_Pointer));
+
+    QueueNode *current = docNameQueue_Pointer->head;
+    while (current != NULL) {
+        printf("Documento: %s\n", current->docName);
+        current = current->next;
     }
 
     docNameQueue_Pointer->current = docNameQueue_Pointer->head;
@@ -299,17 +408,17 @@ int main(int argc, char* argv[]) {
     while(1) {
         lowestNumber = lowestArrayNumber(printersSlot, number_printers);
         subtract_number_array(printersSlot, number_printers, lowestNumber);
-        docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName, printedPapersStack_Pointer, printLogs);
+        docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printers.linesArray, printedPapersStack_Pointer, printLogs);
 
         if(docNameQueue_Pointer->current == docNameQueue_Pointer->tail) {
             lowestNumber = lowestArrayNumber(printersSlot, number_printers);
             subtract_number_array(printersSlot, number_printers, lowestNumber);
-            docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printersName, printedPapersStack_Pointer, printLogs);
+            docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printers.linesArray, printedPapersStack_Pointer, printLogs);
 
             for(int i = 0; i <= number_printers-2; i++) {
                 lowestNumber = lowestArrayNumber(printersSlot, number_printers);
                 subtract_number_array(printersSlot, number_printers, lowestNumber);
-                last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printersName, printedPapersStack_Pointer, printLogs);
+                last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printers.linesArray, printLogs);
                 replaceZeros(printersSlot, number_printers);
                 printf("\n");
             }
