@@ -1,121 +1,103 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-
 
 typedef struct _stackNode {
-   char *docName;
-   int pagesNumber;
-   struct _stackNode *next;
-   struct _stackNode *previous;
+    char *docName;
+    int pagesNumber;
+    struct _stackNode *next;
+    struct _stackNode *previous;
 } StackNode;
 
 typedef struct _stack {
-   StackNode *head;
-   StackNode *current;
-   StackNode *tail;
+    StackNode *head;
+    StackNode *current;
+    StackNode *tail;
 } Stack;
 
 typedef struct _queueNode {
-   char *docName;
-   int number_pages;
-   struct _queueNode *next;
-   struct _queueNode *previous;
+    char *docName;
+    int number_pages;
+    struct _queueNode *next;
+    struct _queueNode *previous;
 } QueueNode;
 
 typedef struct _queue {
-   QueueNode *head;
-   QueueNode *current;
-   QueueNode *tail;
+    QueueNode *head;
+    QueueNode *current;
+    QueueNode *tail;
 } Queue;
 
 typedef struct _printing_document {
-   char docName[51];
-   //char **all_docs;
-   int number_pages;
+    char docName[51];
+    int number_pages;
 } Printing;
 
 typedef struct _LineFile {
     int linesNumber;
     char** linesArray;
     int *numberPages;
-
 } LineFile;
 
-
+// Função para inicializar a pilha
 void initialize_Stack(Stack *stackList) {
-   stackList->head = NULL;
-   stackList->tail = NULL;
+    stackList->head = NULL;
+    stackList->tail = NULL;
 }
 
+// Função para inicializar a fila
 void initialize_Queue(Queue *queueList) {
-   queueList->head = NULL;
-   queueList->tail = NULL;
+    queueList->head = NULL;
+    queueList->tail = NULL;
 }
 
+// Função para adicionar um documento à pilha
 void addStack(Stack *stackList, char *name, int pagesNumber) {
-    // Alocar memória para o novo node
     StackNode *stackNode = (StackNode*) malloc(sizeof(StackNode));
     if (stackNode == NULL) {
         fprintf(stderr, "Erro ao alocar memória para StackNode\n");
         exit(EXIT_FAILURE);
     }
 
-    // Alocar memória para o docName
     stackNode->docName = (char*) malloc(strlen(name) + 1);
     if (stackNode->docName == NULL) {
         fprintf(stderr, "Erro ao alocar memória para docName\n");
-        free(stackNode);
         exit(EXIT_FAILURE);
     }
 
-    // Copiar o nome do documento
     strcpy(stackNode->docName, name);
-
-    // Configurar o número de páginas
     stackNode->pagesNumber = pagesNumber;
 
-    if(stackList->head == NULL) {
+    if (stackList->head == NULL) {
         stackList->head = stackNode;
         stackNode->previous = NULL;
-    }
-    
-    else {
+    } else {
         stackList->tail->next = stackNode;
         stackNode->previous = stackList->tail;
     }
-
 
     stackNode->next = NULL;
     stackList->tail = stackNode;
 }
 
-
+// Função para adicionar um documento à fila
 void addQueue(Queue *queueList, char *name, int number_pages) {
-    // Alocar memória para o novo node
     QueueNode *queueNode = (QueueNode*) malloc(sizeof(QueueNode));
     if (queueNode == NULL) {
         fprintf(stderr, "Erro ao alocar memória para QueueNode\n");
         exit(EXIT_FAILURE);
     }
 
-    // Alocar memória para o docName
     queueNode->docName = (char*) malloc(strlen(name) + 1);
     if (queueNode->docName == NULL) {
         fprintf(stderr, "Erro ao alocar memória para docName\n");
-        free(queueNode);
         exit(EXIT_FAILURE);
     }
 
-    // Copiar o nome do documento
     strcpy(queueNode->docName, name);
-
-    // Configurar o número de páginas
     queueNode->number_pages = number_pages;
     queueNode->next = NULL;
 
-    // Adicionar o node à fila
     if (queueList->head == NULL) {
         queueList->head = queueNode;
         queueNode->previous = NULL;
@@ -127,9 +109,10 @@ void addQueue(Queue *queueList, char *name, int number_pages) {
     queueList->tail = queueNode;
 }
 
+// Função para obter o tamanho da fila
 int queue_size(Queue* queue) {
     int size = 0;
-    QueueNode* current = queue->head; // Supondo que 'head' aponta para o início da fila
+    QueueNode* current = queue->head;
     while (current != NULL) {
         size++;
         current = current->next;
@@ -137,15 +120,15 @@ int queue_size(Queue* queue) {
     return size;
 }
 
+// Função para inicializar os slots das impressoras
 void initialize_printersSlot(int printersSlot[], int number_printers, Queue* docQueue, Printing *printing) {
     int size = queue_size(docQueue);
-    printf("Tamanho da fila: %d\n", size);
     if (size < number_printers) {
         fprintf(stderr, "Erro: docQueue não contém elementos suficientes.\n");
         exit(EXIT_FAILURE);
     }
 
-    docQueue->current = docQueue->head; // Certifique-se de começar do início da fila
+    docQueue->current = docQueue->head;
 
     for (int i = 0; i < number_printers; i++) {
         if (docQueue->current == NULL) {
@@ -154,50 +137,24 @@ void initialize_printersSlot(int printersSlot[], int number_printers, Queue* doc
         }
 
         printersSlot[i] = docQueue->current->number_pages;
-
-        // Certifique-se de que printing[i].docName está alocado corretamente
-        if (printing[i].docName == NULL) {
-            fprintf(stderr, "Erro: docName não foi alocado para a impressora %d.\n", i);
-            exit(EXIT_FAILURE);
-        }
-
         strcpy(printing[i].docName, docQueue->current->docName);
         printing[i].number_pages = docQueue->current->number_pages;
         docQueue->current = docQueue->current->next;
     }
 }
 
-// Funtion that removes stack's tail
-// See this function is really necessaty maybe just need to implement a pop stack one
-void removeStack(Stack *stackList) {
-    if (stackList->head == NULL) {
-        return;
-    }
-    else {
-        StackNode *node = stackList->tail;
-        stackList->tail->previous->next = NULL;
-        stackList->tail = stackList->tail->previous;
-        // See if it's possible to assign node->previous to NULL
-        free(node);
-    }
-}
-
-
+// Função que distribui documentos
 void docDistributuion(int printersSlot[], int number_printers, Queue* docQueue, Printing* printing, char** printersName, Stack* printedPaperStack, Stack** printLogs) {
-    // find out why it's not printing the first printers name, maybe turn it iont a function parameter
-    for(int i = 0; i <= number_printers-1; i++) {
+    for(int i = 0; i < number_printers; i++) {
         if(printersSlot[i] == 0) {
             addStack(printedPaperStack, printing[i].docName, printing[i].number_pages);
             addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
-            //printf("[%s] %s-%dp\n", printersName[i], printing[i].docName, printing[i].number_pages);
+
             StackNode* node = printLogs[i]->tail;
             printf("[%s] ", printersName[i]);
             while (node != NULL) {
                 if (node->docName != NULL)
                     printf("%s-%dp ", node->docName, node->pagesNumber);
-                if (node == printLogs[i]->head) {
-                    break;
-                }
                 node = node->previous;
             }
             printf("\n");
@@ -207,8 +164,7 @@ void docDistributuion(int printersSlot[], int number_printers, Queue* docQueue, 
                 strcpy(printing[i].docName, docQueue->current->docName);
                 printing[i].number_pages = docQueue->current->number_pages;
                 return;
-            }
-            else {
+            } else {
                 printersSlot[i] = docQueue->current->number_pages;
                 strcpy(printing[i].docName, docQueue->current->docName);
                 printing[i].number_pages = docQueue->current->number_pages;
@@ -218,66 +174,59 @@ void docDistributuion(int printersSlot[], int number_printers, Queue* docQueue, 
     }
 }
 
-
+// Função que encontra o menor valor no array
 int lowestArrayNumber(int printersSlot[], int number_printers) {
     int lowest = printersSlot[0];
-    for(int i=0; i <= number_printers-1; i++) {
-        if(printersSlot[i] <= lowest)
+    for(int i = 1; i < number_printers; i++) {
+        if (printersSlot[i] < lowest)
             lowest = printersSlot[i];
     }
-    // Subtract lowest                prependName(buffer[i], printing[i].docName);
-
     return lowest;
 }
 
-
+// Função que subtrai o menor valor do array
 void subtract_number_array(int printersSlot[], int number_printers, int lowestArrayNumber) {
-    for(int i=0; i <= number_printers-1; i++)
-        printersSlot[i] = printersSlot[i]-lowestArrayNumber;
+    for(int i = 0; i < number_printers; i++)
+        printersSlot[i] -= lowestArrayNumber;
 }
 
-
+// Função para comparar e imprimir documentos
 void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack** printLogs) {
-    for(int i = 0; i <= number_printers-1; i++) {
+    for(int i = 0; i < number_printers; i++) {
         if(printersSlot[i] == 0) {
             addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
+
             StackNode* node = printLogs[i]->tail;
             printf("[%s] ", printersName[i]);
             while (node != NULL) {
                 if (node->docName != NULL)
                     printf("%s-%dp ", node->docName, node->pagesNumber);
-                if (node == printLogs[i]->head) {
-                    break;
-                }
                 node = node->previous;
             }
             printf("\n");
-            //printf("[%s] %s-%d", printersName[i], printing[i].docName, printing[i].number_pages);
         }
     }
 }
 
-
+// Função que encontra o menor valor não zero no array
 int last_lowestArrayNumber(int printersSlot[], int number_printers) {
     int lowest = printersSlot[0];
-    for(int i=0; i <= number_printers-1; i++) {
-        if(printersSlot[i] <= lowest) {
-            if(printersSlot[i] != 0)
-                lowest = printersSlot[i];
-        }
+    for(int i = 1; i < number_printers; i++) {
+        if(printersSlot[i] < lowest && printersSlot[i] != 0)
+            lowest = printersSlot[i];
     }
     return lowest;
 }
 
-
+// Função que substitui zeros no array por um valor alto
 void replaceZeros(int printersSlot[], int number_printers) {
-    for(int i = 0; i <= number_printers-1; i++) {
+    for(int i = 0; i < number_printers; i++) {
         if(printersSlot[i] == 0) 
             printersSlot[i] = 1000000;
     }
 }
 
-
+// Função para ler as linhas do arquivo
 LineFile getFileLines(FILE* input) {
     char commandLine[10];
     char nameLine[51];
@@ -288,7 +237,6 @@ LineFile getFileLines(FILE* input) {
 
         lineFile.linesNumber = commandsNumber;
         lineFile.linesArray = malloc(commandsNumber * sizeof(char*));
-
         if (lineFile.linesArray == NULL) {
             fprintf(stderr, "Erro ao alocar memória para linesArray\n");
             exit(EXIT_FAILURE);
@@ -297,7 +245,6 @@ LineFile getFileLines(FILE* input) {
         for (int i = 0; i < commandsNumber; i++) {
             if (fgets(nameLine, sizeof(nameLine), input)) {
                 size_t len = strlen(nameLine);
-
                 if (nameLine[len - 1] == '\n') {
                     nameLine[len - 1] = '\0';
                     len--;
@@ -323,11 +270,24 @@ LineFile getFileLines(FILE* input) {
     return lineFile;
 }
 
-
 int main(int argc, char* argv[]) {
-    
+    if (argc < 3) {
+        fprintf(stderr, "Uso: %s <input file> <output file>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
     FILE* input = fopen(argv[1], "r");
+    if (input == NULL) {
+        perror("Erro ao abrir o arquivo de entrada");
+        return EXIT_FAILURE;
+    }
+
     FILE* output = fopen(argv[2], "w");
+    if (output == NULL) {
+        perror("Erro ao abrir o arquivo de saída");
+        fclose(input);
+        return EXIT_FAILURE;
+    }
 
     Stack printedPapersStack;
     Stack *printedPapersStack_Pointer = &printedPapersStack;
@@ -336,41 +296,48 @@ int main(int argc, char* argv[]) {
     Stack printLog;
     Stack *printLog_pointer = &printLog;
     initialize_Stack(printLog_pointer);
-    Stack** printLogs = &printLog_pointer;
+    Stack** printLogs = malloc(sizeof(Stack*) * 10); // Alterado para alocar memória para um número máximo de impressoras
+    if (printLogs == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para printLogs\n");
+        fclose(input);
+        fclose(output);
+        return EXIT_FAILURE;
+    }
+    for (int i = 0; i < 10; i++) { // Inicialize o número de pilhas para o máximo de impressoras
+        printLogs[i] = NULL;
+    }
 
     Queue docNameQueue;
     Queue *docNameQueue_Pointer = &docNameQueue;
     initialize_Queue(docNameQueue_Pointer);
+
     LineFile printers = getFileLines(input);
-
-
-
     char *docName, *numberPagesStr;
-    char numberPagesChar;
     int number_Pages;
     int all_number_pages = 0;
-
-    int printedPages = 0;
     int number_printers = printers.linesNumber;
     
     printf("--Numero de impressoras = %d--\n", number_printers);
     for(int i = 0; i < number_printers; i++) {
         printf("Impressora: %s\n", printers.linesArray[i]);
+        printLogs[i] = malloc(sizeof(Stack)); // Inicialize uma pilha para cada impressora
+        if (printLogs[i] == NULL) {
+            fprintf(stderr, "Erro ao alocar memória para printLogs[%d]\n", i);
+            fclose(input);
+            fclose(output);
+            return EXIT_FAILURE;
+        }
+        initialize_Stack(printLogs[i]);
     }
 
-    int printersSlot[number_printers];
-    int lowestNumber;
-    
     Printing printed_Documents[number_printers];
     LineFile documents = getFileLines(input);
     fclose(input);
 
     for (int i = 0; i < documents.linesNumber; i++) {
         printf("Linha %d: %s\n", i + 1, documents.linesArray[i]);
-        free(documents.linesArray[i]);
     }
 
-    // Alocar memória para todos os elementos de numberPages fora do loop
     documents.numberPages = (int*) malloc(documents.linesNumber * sizeof(int));
     if (documents.numberPages == NULL) {
         fprintf(stderr, "Erro ao alocar memória para documents.numberPages\n");
@@ -378,20 +345,27 @@ int main(int argc, char* argv[]) {
     }
 
     for (int i = 0; i < documents.linesNumber; i++) {
-        docName = strtok(documents.linesArray[i], " ");
-        numberPagesStr = strtok(NULL, "");
-    
-        // Verificação para garantir que numberPagesStr não seja NULL
-        if (numberPagesStr != NULL) {
-            number_Pages = atoi(numberPagesStr);  // Converter a string inteira para um número inteiro
-            documents.numberPages[i] = number_Pages;
-            all_number_pages += number_Pages;
-            addQueue(docNameQueue_Pointer, documents.linesArray[i], documents.numberPages[i]);
+        char *line = strdup(documents.linesArray[i]);
+        if (line == NULL) {
+            fprintf(stderr, "Erro ao alocar memória para duplicar a linha\n");
+            exit(EXIT_FAILURE);
         }
-        else {
-            fprintf(stderr, "Erro ao processar a linha %d: formato inválido\n", i);
-            documents.numberPages[i] = 0;  // Definir um valor padrão ou tratar o erro conforme necessário
+
+        char *docName = strtok(line, " ");
+        char *numberPagesStr = strtok(NULL, "");
+
+        if (docName != NULL) {
+            printf("DocName: %s\n", docName);
+        } else {
+            printf("Erro: Nome do documento não encontrado na linha %d\n", i);
         }
+
+        int number_Pages = atoi(numberPagesStr);
+        printf("Number pages: %d\n", number_Pages);
+   
+        all_number_pages += number_Pages;       
+        addQueue(docNameQueue_Pointer, docName, number_Pages);
+        free(line); // Liberar memória
     }
 
     printf("Tamango do docQueue--%d--\n", queue_size(docNameQueue_Pointer));
@@ -402,20 +376,22 @@ int main(int argc, char* argv[]) {
         current = current->next;
     }
 
+    int printersSlot[number_printers];
+
     docNameQueue_Pointer->current = docNameQueue_Pointer->head;
     initialize_printersSlot(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents);
 
-    while(1) {
-        lowestNumber = lowestArrayNumber(printersSlot, number_printers);
+    while (1) {
+        int lowestNumber = lowestArrayNumber(printersSlot, number_printers);
         subtract_number_array(printersSlot, number_printers, lowestNumber);
         docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printers.linesArray, printedPapersStack_Pointer, printLogs);
 
-        if(docNameQueue_Pointer->current == docNameQueue_Pointer->tail) {
+        if (docNameQueue_Pointer->current == docNameQueue_Pointer->tail) {
             lowestNumber = lowestArrayNumber(printersSlot, number_printers);
             subtract_number_array(printersSlot, number_printers, lowestNumber);
             docDistributuion(printersSlot, number_printers, docNameQueue_Pointer, printed_Documents, printers.linesArray, printedPapersStack_Pointer, printLogs);
 
-            for(int i = 0; i <= number_printers-2; i++) {
+            for (int i = 0; i < number_printers - 1; i++) {
                 lowestNumber = lowestArrayNumber(printersSlot, number_printers);
                 subtract_number_array(printersSlot, number_printers, lowestNumber);
                 last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printers.linesArray, printLogs);
@@ -425,31 +401,31 @@ int main(int argc, char* argv[]) {
            
             break;
         }
-
     }
 
     printf("%d-p\n", all_number_pages);
     printedPapersStack_Pointer->current = printedPapersStack_Pointer->tail;
 
-    while(1) {
+    while (1) {
         if (printedPapersStack_Pointer->current == printedPapersStack_Pointer->head) {
             printf("%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
             break;
-        }
-        else {
+        } else {
             printf("%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
             printedPapersStack_Pointer->current = printedPapersStack_Pointer->current->previous;
         }
     }
 
-    fclose(input); 
     fclose(output);
 
+    // Liberar memória
+    for (int i = 0; i < number_printers; i++) {
+        free(printers.linesArray[i]);
+        free(printLogs[i]);
+    }
+    free(printers.linesArray);
+    free(documents.numberPages);
+    free(printLogs);
+    
     return 0;
 }
-
-
-// pass the output file ass agument of the last and thedistributuion functions fprint print out in the output and fprint when the printer gets the file
-// In the the distribution functions add the printed file to the stack
-// print the stack
-// numeber of prited files
