@@ -191,10 +191,11 @@ void subtract_number_array(int printersSlot[], int number_printers, int lowestAr
 }
 
 // Função para comparar e imprimir documentos
-void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack** printLogs) {
+void last_compare(int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack** printLogs, Stack* printedPaperStack) {
     for(int i = 0; i < number_printers; i++) {
         if(printersSlot[i] == 0) {
             addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
+            addStack(printedPaperStack, printing[i].docName, printing[i].number_pages);
 
             StackNode* node = printLogs[i]->tail;
             printf("[%s] ", printersName[i]);
@@ -394,9 +395,10 @@ int main(int argc, char* argv[]) {
             for (int i = 0; i < number_printers - 1; i++) {
                 lowestNumber = lowestArrayNumber(printersSlot, number_printers);
                 subtract_number_array(printersSlot, number_printers, lowestNumber);
-                last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printers.linesArray, printLogs);
+                last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printers.linesArray, printLogs, printedPapersStack_Pointer);
                 replaceZeros(printersSlot, number_printers);
-                printf("\n");
+                last_compare(printersSlot, number_printers, lowestNumber, printed_Documents, printers.linesArray, printLogs, printedPapersStack_Pointer);
+
             }
            
             break;
@@ -405,10 +407,13 @@ int main(int argc, char* argv[]) {
 
     printf("%d-p\n", all_number_pages);
     printedPapersStack_Pointer->current = printedPapersStack_Pointer->tail;
-
+    //printf("%s-%dp\n", printedPapersStack_Pointer->tail->docName, printedPapersStack_Pointer->tail->pagesNumber);
+    // it's not adding the last file to the stack so it can be printed here
+    // its missing three docs
+    
     while (1) {
         if (printedPapersStack_Pointer->current == printedPapersStack_Pointer->head) {
-            printf("%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
+            printf("%s-%dp\n", printedPapersStack_Pointer->head->docName, printedPapersStack_Pointer->head->pagesNumber);
             break;
         } else {
             printf("%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
