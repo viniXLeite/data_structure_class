@@ -45,13 +45,12 @@ void initialize_Stack(Stack *stackList) {
     stackList->tail = NULL;
 }
 
-// Função para inicializar a fila
 void initialize_Queue(Queue *queueList) {
     queueList->head = NULL;
     queueList->tail = NULL;
 }
 
-
+// To know if the first line of a file is a number
 int is_number(const char *str) {
     while (*str) {
         if (!isdigit(*str)) return 0;
@@ -60,6 +59,7 @@ int is_number(const char *str) {
     return 1;
 }
 
+// Function responsible to read n lines of a file and store them to a Line variable 
 LineFile read_lines_based_on_number(FILE* input) {
     LineFile Line;
 
@@ -78,7 +78,7 @@ LineFile read_lines_based_on_number(FILE* input) {
 
             for (int i = 0; i < count; i++) {
                 if (fgets(line, sizeof(line), input)) {
-                    // Remove o caractere de nova linha, se presente
+                    // Removes the new line character 
                     line[strcspn(line, "\n")] = '\0';
                     Line.linesArray[i] = (char*) malloc(strlen(line)+1);
                     strcpy(Line.linesArray[i], line);
@@ -88,9 +88,7 @@ LineFile read_lines_based_on_number(FILE* input) {
             printf("A primeira linha do arquivo não é um número válido.\n");
         }
     }
-
     return Line;
-
 }
 
 void addQueue(Queue *queueList, char *name, int number_pages) {
@@ -129,11 +127,6 @@ void addStack(Stack *stackList, char *name, int pagesNumber) {
     }
 
     stackNode->docName = (char*) malloc(strlen(name) + 1);
-    //if (stackNode->docName == NULL) {
-        //fprintf(stderr, "Erro ao alocar memória para docName\n");
-        //exit(EXIT_FAILURE);
-    //}
-
     strcpy(stackNode->docName, name);
     stackNode->pagesNumber = pagesNumber;
 
@@ -149,20 +142,18 @@ void addStack(Stack *stackList, char *name, int pagesNumber) {
     stackList->tail = stackNode;
 }
 
-int separarNumero(const char *str) {
-    char numero_str[10];
-    char nome[51];
-    int numero;
+int separateNumberFromString(const char *str) {
+    char number_str[10];
+    char name[51];
+    int number;
     
-    // Usando sscanf para separar a string em partes
-    sscanf(str, "%s %s", nome, numero_str);
+    sscanf(str, "%s %s", name, number_str);
+    number = atoi(number_str);
     
-    // Convertendo a parte numérica para inteiro
-    numero = atoi(numero_str);
-    
-    return numero;
+    return number;
 }
 
+// Initialize the printers' slot, in order to store on it the docQueue components
 void initialize_printersSlot(int* printerSlot, int number_printers, Queue* docQueue_Pointer, Printing* Printing) {
     docQueue_Pointer->current = docQueue_Pointer->head;
 
@@ -179,9 +170,7 @@ void initialize_printersSlot(int* printerSlot, int number_printers, Queue* docQu
 
 }
 
-
-//---------//
-
+// Determines the lowest number of an array, in this case the array is the printersSlot
 int lowestArrayNumber(int printersSlot[], int number_printers) {
     int lowest = printersSlot[0];
     for(int i = 1; i < number_printers; i++) {
@@ -191,26 +180,23 @@ int lowestArrayNumber(int printersSlot[], int number_printers) {
     return lowest;
 }
 
+// Distribute the pages' number of each document of the queue in the printers' slot, and print out the printed ones on a output file
 void docDistributuion(FILE* output, int printersSlot[], int number_printers, Queue* docQueue, Printing* printing, char** printersName, Stack* printedPaperStack, Stack** printLogs) {
     for(int i = 0; i < number_printers; i++) {
         if(printersSlot[i] == 0) {
             addStack(printedPaperStack, printing[i].docName, printing[i].number_pages);
             addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
-            //printf("ok until addStack\n");
 
             StackNode* node = printLogs[i]->tail;
-            //printf("[%s] ", printersName[i]);
             fprintf(output, "[%s] ", printersName[i]);
 
             while (node != NULL) {
                 if (node->docName != NULL) {
-                    //printf("%s-%dp ", node->docName, node->pagesNumber);
                     fprintf(output, "%s-%dp ", node->docName, node->pagesNumber);
                 }
                 node = node->previous;
             }
             fprintf(output, "\n");
-            //printf("\n");
 
             if(docQueue->current == docQueue->tail) {
                 printersSlot[i] = docQueue->current->number_pages;
@@ -232,6 +218,7 @@ void subtract_number_array(int printersSlot[], int number_printers, int lowestAr
         printersSlot[i] -= lowestArrayNumber;
 }
 
+// Treats the case of docDistribution when the node = docQueue_Pointer->tail
 void last_compare(FILE *output, int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack** printLogs, Stack* printedPaperStack) {
     for(int i = 0; i < number_printers; i++) {
         if(printersSlot[i] == 0) {
@@ -272,7 +259,6 @@ void replaceZeros(int printersSlot[], int number_printers) {
 }
 
 
-
 int main(int argc, char* argv[]) {
     FILE *input = fopen(argv[1], "r");
     FILE *output = fopen(argv[2], "w");
@@ -295,7 +281,6 @@ int main(int argc, char* argv[]) {
     LineFile printers = read_lines_based_on_number(input);
     printf("--Read File--\nNumber of printers: %d\n",printers.linesNumber);
     for(int i = 0; i <= printers.linesNumber-1; i++) {
-        //printf("Printer: %s\n", printers.linesArray[i]);
     }
 
     // Checks Documents
@@ -305,12 +290,12 @@ int main(int argc, char* argv[]) {
     char tempInt[51];
     printf("\n--Read File--\nNumber of Documents: %d\n",Documents.linesNumber);
     Documents.numberPages = (int*) malloc(Documents.linesNumber*sizeof(int));
+
     // Separates number pages of each Document and then checks it
     for(int i = 0; i <= Documents.linesNumber-1; i++) {
-        Documents.numberPages[i] = separarNumero(Documents.linesArray[i]);
+        Documents.numberPages[i] = separateNumberFromString(Documents.linesArray[i]);
         sscanf(Documents.linesArray[i], "%s %s", tempName, tempInt);
         strcpy(Documents.linesArray[i], tempName);
-        //printf("Doc: %s, pages: %d\n", Documents.linesArray[i], Documents.numberPages[i]);
     }
 
     // Checks number_printers and number_Documents
@@ -326,7 +311,6 @@ int main(int argc, char* argv[]) {
     QueueNode* nodeQueueDoc = docNameQueue_Pointer->head;
     printf("--Queue--\n");
     while(nodeQueueDoc != NULL) {
-        //printf("Queue: %s--%dp\n", nodeQueueDoc->docName, nodeQueueDoc->number_pages);
         total_pages += nodeQueueDoc->number_pages;
         nodeQueueDoc = nodeQueueDoc->next;
     }
@@ -336,9 +320,6 @@ int main(int argc, char* argv[]) {
     Printing Printing[number_printers];
     initialize_printersSlot(printersSlot, number_printers, docNameQueue_Pointer, Printing);
     printf("\n--PrintesSlot--\n");
-    //for(int i = 0; i <= number_printers-1; i++) {
-        //printf("printersSlot: %d\n", printersSlot[i]);
-    //}
 
     Stack** printLogs = malloc(sizeof(Stack*) * number_printers); 
     for(int i = 0; i < number_printers; i++) {
@@ -372,24 +353,12 @@ int main(int argc, char* argv[]) {
     printf("%d-p\n", total_pages);
     printedPapersStack_Pointer->current = printedPapersStack_Pointer->tail;
 
-    
-    /* if(number_Documents < number_printers) {
-            total_slots = number_printers - number_Documents
-            printersSlot2[total_slots]
-            initialize(printersSlot, total_slots)
-            
-            segmentation fault nesse caso em else do docdtribution quando numero de documentos e menor que o de impressoras 
-            e o loop nao para quando igual
-    */
-
     while (1) {
         if (printedPapersStack_Pointer->current == printedPapersStack_Pointer->head) {
-            //printf("%s-%dp\n", printedPapersStack_Pointer->head->docName, printedPapersStack_Pointer->head->pagesNumber);
             fprintf(output, "%s-%dp\n", printedPapersStack_Pointer->head->docName, printedPapersStack_Pointer->head->pagesNumber);
 
             break;
         } else {
-            //printf("%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
             fprintf(output,"%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
             printedPapersStack_Pointer->current = printedPapersStack_Pointer->current->previous;
         }
@@ -399,17 +368,14 @@ int main(int argc, char* argv[]) {
     
     while (1) {
         if (printedPapersStack_Pointer->current == printedPapersStack_Pointer->head) {
-            //printf("%s-%dp\n", printedPapersStack_Pointer->head->docName, printedPapersStack_Pointer->head->pagesNumber);
             fprintf(output, "%s-%dp\n", printedPapersStack_Pointer->head->docName, printedPapersStack_Pointer->head->pagesNumber);
 
             break;
         } else {
-            //printf("%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
             fprintf(output,"%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
             printedPapersStack_Pointer->current = printedPapersStack_Pointer->current->previous;
         }
     }
-
 
     fclose(input);
     fclose(output);
