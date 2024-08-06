@@ -93,45 +93,6 @@ void distribute_ISBNs(long long int* ISBN_array, Book *Books, int number_of_book
 }
 
 
-// change the position of elements
-void swap(long long int* a, long long int* b) {
-    long long int temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-void heapify(long long int arr[], int n, int i) {
-    int largest = i; 
-    int left = 2 * i + 1; 
-    int right = 2 * i + 2; 
-
-    if (left < n && arr[left] > arr[largest]) {
-        largest = left;
-    }
-
-    if (right < n && arr[right] > arr[largest]) {
-        largest = right;
-    }
-
-    if (largest != i) {
-        swap(&arr[i], &arr[largest]);
-
-        heapify(arr, n, largest);
-    }
-}
-
-void heapSort(long long int arr[], int n) {
-    for (int i = n / 2 - 1; i >= 0; i--) {
-        heapify(arr, n, i);
-    }
-
-    for (int i = n - 1; i >= 0; i--) {
-        swap(&arr[0], &arr[i]);
-
-        heapify(arr, i, 0);
-    }
-}
-
 void show_array(long long int* array, int j) {
     for(int i = 0; i <= j-1; i++) {
         if(i == 0) {
@@ -146,25 +107,36 @@ void show_array(long long int* array, int j) {
     }
 }
 
-int regular_binarySearch(long long int *vector, int i, int j, long long int x) {
-    int p = (i+j)/2;
 
-    if(j < i)
-        return -1;
-    else if(vector[p] == x)
-        return p;
-    else if(vector[p] < x)
-        return regular_binarySearch(vector, p+1, j, x);
-    else
-        return regular_binarySearch(vector, i, p-1, x);
+int regular_binarySearch(long long int *vector, int n, long long int x, int *steps_binary) {
+    int i = 0, j = n - 1;
+    int p = (i + j) / 2;
+    int counter = 0;
 
+    while (j >= i) {
+        counter += 1;  // Incrementa steps_binary a cada iteração
+
+        if (vector[p] == x) {
+            steps_binary[0] = counter;
+            return p;  // Retorna o índice se o elemento for encontrado
+        } else if (vector[p] > x) {
+            j = p - 1;
+        } else {
+            i = p + 1;
+        }
+        p = (i + j) / 2;
+    }
+
+    steps_binary[0] = counter;
+    return -1;  // Retorna -1 se o elemento não for encontrado
 }
 
-int interpolatedBinarySearch(long long int arr[], int n, long long int target) {
+
+int interpolatedBinarySearch(long long int arr[], int n, long long int target, int *steps_interpolated) {
     int low = 0;
     int high = n - 1;
     int counter = 0;
-    int result[2]; // store the position and the counter here, use void func and pass result as arg of this funtion
+    // store the position ,the counter and the sum of all steps here. Use void func and pass 'result' as arg of this funtion 
 
     while (low <= high) {
         counter += 1;
@@ -176,7 +148,7 @@ int interpolatedBinarySearch(long long int arr[], int n, long long int target) {
         }
 
         if (arr[pos] == target) {
-            printf("\ncounter interpolated: %d", counter);
+            steps_interpolated[0] = counter;
             return pos;
         }
 
@@ -187,9 +159,36 @@ int interpolatedBinarySearch(long long int arr[], int n, long long int target) {
         }
     }
     
+    steps_interpolated[0] = counter;
     return -1;
 }
 
+void compare_search_algorithms(FILE* output, long long int *ISBN_array, int number_of_books, long long int *ISBN_to_search, 
+    int number_ISBNs_to_search, Book *Books, int* steps_binary, int* steps_interpolated, int* all_steps_binary, int* all_steps_interpolated) {
+
+    int binary_position;
+    int interpolated_position;
+
+    for(int i = 0; i <= number_ISBNs_to_search-1; i++) {
+        binary_position = regular_binarySearch(ISBN_array, number_of_books, ISBN_to_search[i], steps_binary);
+        all_steps_binary[0] += steps_binary[0];
+        printf("\n\nRegular Binary search, position: %d, steps: %d", binary_position, steps_binary[0]);
+
+        interpolated_position = interpolatedBinarySearch(ISBN_array, number_of_books, ISBN_to_search[i], steps_interpolated);
+        all_steps_interpolated[0] += steps_interpolated[0];
+        printf("\nInterpolated Binary search, position: %d, steps: %d\n", interpolated_position, steps_interpolated[0]);
+
+        if(interpolated_position != -1) {
+            fprintf(output, "[%lld]B=%d,I=%d:Author:%s,Title:%s\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0], Books[binary_position].author, Books[binary_position].title);
+            printf("[%lld]B=%d,I=%d:Author:%s,Title:%s\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0], Books[binary_position].author, Books[binary_position].title);
+        }
+        else {
+            fprintf(output, "[%lld]B=%d,I=%d:ISBN_NOT_FOUND\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0]);
+            printf("[%lld]B=%d,I=%d:ISBN_NOT_FOUND\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0]);
+        }
+    }
+
+}
 
 int main(int argc, char* argv[]) {
 	FILE* input = fopen(argv[1], "r");
@@ -201,17 +200,17 @@ int main(int argc, char* argv[]) {
     printf("\n---ISBNs to search---\n");
     FileInfo File_ISBN_to_search = read_lines_based_on_number(input, output);
 
+    // Converts the ISBNs to search from strings to integers
     printf("\n---ISBNs to search(all int)---\n");
-    long long int ISBNs_to_search[File_ISBN_to_search.number_of_lines];
-    convert_ISBN_to_ll_int(File_ISBN_to_search.array_of_lines, File_ISBN_to_search.number_of_lines, ISBNs_to_search);
-    show_array(ISBNs_to_search, File_ISBN_to_search.number_of_lines);
-    
+    int number_ISBNs_to_search = File_ISBN_to_search.number_of_lines;
+    long long int ISBNs_to_search[number_ISBNs_to_search];
+    convert_ISBN_to_ll_int(File_ISBN_to_search.array_of_lines, number_ISBNs_to_search, ISBNs_to_search);
+    show_array(ISBNs_to_search, number_ISBNs_to_search);
 
     // Creates an array of Book and then stores BooksInfo informations on it
     int number_of_books = BooksInfo.number_of_lines;
     printf("\n\nnumber of books: %d\n", number_of_books);
     Book Books[number_of_books];
-    // Remenber to reorganized the Books array to match the heap sorted ISBN array
     initialize_Books(Books, BooksInfo, number_of_books);
 
     // Creates an array of ISBN and stores Books[i].ISBNs on it
@@ -220,20 +219,16 @@ int main(int argc, char* argv[]) {
     printf("--Distributed ISBNs--\n");    
     show_array(ISBN_array, number_of_books);
 
-    // Reorganizes the ISBN_array if it's not sorted with the heapsort algorithm
-    heapSort(ISBN_array, number_of_books);
-    printf("\n\n--heapsorted--\n");
-    show_array(ISBN_array, number_of_books);
-
-    // Checks the binary search
-    printf("\n\nRegular Binary search: %d\n", regular_binarySearch(ISBN_array, 0, number_of_books-1, 9780321751041));
-
-    // checks the interpolated search
-    int interpolated_counter;
-    int interpolated_position = interpolatedBinarySearch(ISBN_array, number_of_books, 9780321751041);
-    printf("\nInterpolated Binary search: %d, steps: %d\n", interpolated_position, interpolated_counter);
+    int steps_binary[1];
+    int steps_interpolated[1];
 
     //Remenber to implement the trucated average of steps for each search algorithm
+    int all_steps_binary[1];
+    all_steps_binary[0] = 0;
+    int all_steps_interpolated[1];
+    all_steps_binary[0] = 0;
+
+    compare_search_algorithms(output, ISBN_array, number_of_books, ISBNs_to_search, number_ISBNs_to_search, Books, steps_binary, steps_interpolated, all_steps_binary, all_steps_interpolated);
 
     fclose(input); 
     fclose(output);
