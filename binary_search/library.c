@@ -101,9 +101,9 @@ void swap(long long int* a, long long int* b) {
 }
 
 void heapify(long long int arr[], int n, int i) {
-    int largest = i; // Inicializa o maior como raiz
-    int left = 2 * i + 1; // Índice do filho esquerdo
-    int right = 2 * i + 2; // Índice do filho direito
+    int largest = i; 
+    int left = 2 * i + 1; 
+    int right = 2 * i + 2; 
 
     if (left < n && arr[left] > arr[largest]) {
         largest = left;
@@ -146,6 +146,49 @@ void show_array(long long int* array, int j) {
     }
 }
 
+int regular_binarySearch(long long int *vector, int i, int j, long long int x) {
+    int p = (i+j)/2;
+
+    if(j < i)
+        return -1;
+    else if(vector[p] == x)
+        return p;
+    else if(vector[p] < x)
+        return regular_binarySearch(vector, p+1, j, x);
+    else
+        return regular_binarySearch(vector, i, p-1, x);
+
+}
+
+int interpolatedBinarySearch(long long int arr[], int n, long long int target) {
+    int low = 0;
+    int high = n - 1;
+    int counter = 0;
+    int result[2]; // store the position and the counter here, use void func and pass result as arg of this funtion
+
+    while (low <= high) {
+        counter += 1;
+
+        int pos = low + ((target - arr[low]) * (high - low)) / (arr[high] - arr[low]);
+
+        if (pos < low || pos > high) {
+            break;
+        }
+
+        if (arr[pos] == target) {
+            printf("\ncounter interpolated: %d", counter);
+            return pos;
+        }
+
+        if (arr[pos] > target) {
+            high = pos - 1;
+        } else {
+            low = pos + 1;
+        }
+    }
+    
+    return -1;
+}
 
 
 int main(int argc, char* argv[]) {
@@ -155,7 +198,6 @@ int main(int argc, char* argv[]) {
     printf("--Read lines--\n");
     FileInfo BooksInfo = read_lines_based_on_number(input, output);
 
-    // Remember to convert it to long long int
     printf("\n---ISBNs to search---\n");
     FileInfo File_ISBN_to_search = read_lines_based_on_number(input, output);
 
@@ -163,11 +205,13 @@ int main(int argc, char* argv[]) {
     long long int ISBNs_to_search[File_ISBN_to_search.number_of_lines];
     convert_ISBN_to_ll_int(File_ISBN_to_search.array_of_lines, File_ISBN_to_search.number_of_lines, ISBNs_to_search);
     show_array(ISBNs_to_search, File_ISBN_to_search.number_of_lines);
+    
 
     // Creates an array of Book and then stores BooksInfo informations on it
     int number_of_books = BooksInfo.number_of_lines;
     printf("\n\nnumber of books: %d\n", number_of_books);
     Book Books[number_of_books];
+    // Remenber to reorganized the Books array to match the heap sorted ISBN array
     initialize_Books(Books, BooksInfo, number_of_books);
 
     // Creates an array of ISBN and stores Books[i].ISBNs on it
@@ -181,7 +225,15 @@ int main(int argc, char* argv[]) {
     printf("\n\n--heapsorted--\n");
     show_array(ISBN_array, number_of_books);
 
+    // Checks the binary search
+    printf("\n\nRegular Binary search: %d\n", regular_binarySearch(ISBN_array, 0, number_of_books-1, 9780321751041));
 
+    // checks the interpolated search
+    int interpolated_counter;
+    int interpolated_position = interpolatedBinarySearch(ISBN_array, number_of_books, 9780321751041);
+    printf("\nInterpolated Binary search: %d, steps: %d\n", interpolated_position, interpolated_counter);
+
+    //Remenber to implement the trucated average of steps for each search algorithm
 
     fclose(input); 
     fclose(output);
