@@ -226,29 +226,17 @@ void last_compare(FILE *output, int printersSlot[], int number_printers, int low
             addStack(printedPaperStack, printing[i].docName, printing[i].number_pages);
 
             StackNode* node = printLogs[i]->tail;
-            //printf("[%s] ", printersName[i]);
             fprintf(output, "[%s] ", printersName[i]);
 
             while (node != NULL) {
                 if (node->docName != NULL) {
-                    //printf("%s-%dp ", node->docName, node->pagesNumber);
                     fprintf(output, "%s-%dp ", node->docName, node->pagesNumber);
                 }
                 node = node->previous;
             }
-            //printf("\n");
             fprintf(output, "\n");
         }
     }
-}
-
-int last_lowestArrayNumber(int printersSlot[], int number_printers) {
-    int lowest = printersSlot[0];
-    for(int i = 1; i < number_printers; i++) {
-        if(printersSlot[i] < lowest && printersSlot[i] != 0)
-            lowest = printersSlot[i];
-    }
-    return lowest;
 }
 
 void replaceZeros(int printersSlot[], int number_printers) {
