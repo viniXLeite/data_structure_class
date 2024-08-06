@@ -32,7 +32,6 @@ FileInfo read_lines_based_on_number(FILE* input, FILE* output) {
     char line[170];
     if (fgets(line, sizeof(line), input)) {
         line[strcspn(line, "\n")] = '\0';
-        fprintf(output,"%s\n", line);
         if (is_number(line)) {
             int count = atoi(line);
             FileInfo.number_of_lines = count;
@@ -40,7 +39,6 @@ FileInfo read_lines_based_on_number(FILE* input, FILE* output) {
 
             for (int i = 0; i < count; i++) {
                 if (fgets(line, sizeof(line), input)) {
-                    // Remove o caractere de nova linha, se presente
                     line[strcspn(line, "\n")] = '\0';
                     FileInfo.array_of_lines[i] = (char*) malloc(strlen(line)+1);
                     strcpy(FileInfo.array_of_lines[i], line);
@@ -55,8 +53,13 @@ FileInfo read_lines_based_on_number(FILE* input, FILE* output) {
     return FileInfo;
 }
 
-void initialize_Books(FileInfo BooksInfo, int number_of_books) {
-    Book books[number_of_books];
+void convert_ISBN_to_ll_int(char** array, int number_of_strings, long long int *ISBN) {
+    for(int i = 0; i <= number_of_strings-1; i++) {
+        ISBN[i] = strtoll(array[i], NULL, 10);
+    }
+}
+
+void initialize_Books(Book *books, FileInfo BooksInfo, int number_of_books) {
     char temp_author_title[150];
     char temp_IBSN[15];
 
@@ -79,7 +82,16 @@ void initialize_Books(FileInfo BooksInfo, int number_of_books) {
         printf("ISBN: %lld, Author: %s, Title: %s;\n", books[i].ISBN, books[i].author, books[i].title);
 
     }
+
 }
+
+void distribute_ISBNs(long long int* ISBN_array, Book *Books, int number_of_books) {
+    printf("\n");
+    for(int i = 0; i <= number_of_books-1; i++) {
+        ISBN_array[i] = Books[i].ISBN;
+    }
+}
+
 
 // change the position of elements
 void swap(long long int* a, long long int* b) {
@@ -88,45 +100,86 @@ void swap(long long int* a, long long int* b) {
     *b = temp;
 }
 
-// Patition the array
-int partition(long long int arr[], int low, int high) {
-    long long int pivot = arr[high]; // Pivô
-    int i = (low - 1); // Índice do menor elemento
+void heapify(long long int arr[], int n, int i) {
+    int largest = i; // Inicializa o maior como raiz
+    int left = 2 * i + 1; // Índice do filho esquerdo
+    int right = 2 * i + 2; // Índice do filho direito
 
-    for (int j = low; j <= high - 1; j++) {
-        if (arr[j] <= pivot) {
-            i++; 
-            swap(&arr[i], &arr[j]);
+    if (left < n && arr[left] > arr[largest]) {
+        largest = left;
+    }
+
+    if (right < n && arr[right] > arr[largest]) {
+        largest = right;
+    }
+
+    if (largest != i) {
+        swap(&arr[i], &arr[largest]);
+
+        heapify(arr, n, largest);
+    }
+}
+
+void heapSort(long long int arr[], int n) {
+    for (int i = n / 2 - 1; i >= 0; i--) {
+        heapify(arr, n, i);
+    }
+
+    for (int i = n - 1; i >= 0; i--) {
+        swap(&arr[0], &arr[i]);
+
+        heapify(arr, i, 0);
+    }
+}
+
+void show_array(long long int* array, int j) {
+    for(int i = 0; i <= j-1; i++) {
+        if(i == 0) {
+            printf("[%lld, ", array[i]);
+        }
+        else if(i == j-1) {
+            printf("%lld]", array[i]);
+        }
+        else {
+            printf("%lld, ", array[i]);
         }
     }
-    swap(&arr[i + 1], &arr[high]);
-    return (i + 1);
 }
 
-void quickSort(long long int arr[], int low, int high) {
-    if (low < high) {
-        int pi = partition(arr, low, high);
-
-        quickSort(arr, low, pi - 1);
-        quickSort(arr, pi + 1, high);
-    }
-}
 
 
 int main(int argc, char* argv[]) {
 	FILE* input = fopen(argv[1], "r");
 	FILE* output = fopen(argv[2], "w");
 
-    printf("--Books--\n");
+    printf("--Read lines--\n");
     FileInfo BooksInfo = read_lines_based_on_number(input, output);
 
-    printf("\n---ISBNs---\n");
-    FileInfo IBNs = read_lines_based_on_number(input, output);
+    // Remember to convert it to long long int
+    printf("\n---ISBNs to search---\n");
+    FileInfo File_ISBN_to_search = read_lines_based_on_number(input, output);
 
-    // Creates an array of Book and then store BooksInfo informations on it
+    printf("\n---ISBNs to search(all int)---\n");
+    long long int ISBNs_to_search[File_ISBN_to_search.number_of_lines];
+    convert_ISBN_to_ll_int(File_ISBN_to_search.array_of_lines, File_ISBN_to_search.number_of_lines, ISBNs_to_search);
+    show_array(ISBNs_to_search, File_ISBN_to_search.number_of_lines);
+
+    // Creates an array of Book and then stores BooksInfo informations on it
     int number_of_books = BooksInfo.number_of_lines;
+    printf("\n\nnumber of books: %d\n", number_of_books);
     Book Books[number_of_books];
-    initialize_Books(BooksInfo, number_of_books);
+    initialize_Books(Books, BooksInfo, number_of_books);
+
+    // Creates an array of ISBN and stores Books[i].ISBNs on it
+    long long int ISBN_array[number_of_books];
+    distribute_ISBNs(ISBN_array, Books, number_of_books);
+    printf("--Distributed ISBNs--\n");    
+    show_array(ISBN_array, number_of_books);
+
+    // Reorganizes the ISBN_array if it's not sorted with the heapsort algorithm
+    heapSort(ISBN_array, number_of_books);
+    printf("\n\n--heapsorted--\n");
+    show_array(ISBN_array, number_of_books);
 
 
 
