@@ -164,7 +164,9 @@ int interpolatedBinarySearch(long long int arr[], int n, long long int target, i
 }
 
 void compare_search_algorithms(FILE* output, long long int *ISBN_array, int number_of_books, long long int *ISBN_to_search, 
-    int number_ISBNs_to_search, Book *Books, int* steps_binary, int* steps_interpolated, int* all_steps_binary, int* all_steps_interpolated) {
+    int number_ISBNs_to_search, Book *Books, int* steps_binary, 
+    int* steps_interpolated, int* all_steps_binary, 
+    int* all_steps_interpolated, int *number_victories_binary, int *number_victories_interpolated) {
 
     int binary_position;
     int interpolated_position;
@@ -177,6 +179,12 @@ void compare_search_algorithms(FILE* output, long long int *ISBN_array, int numb
         interpolated_position = interpolatedBinarySearch(ISBN_array, number_of_books, ISBN_to_search[i], steps_interpolated);
         all_steps_interpolated[0] += steps_interpolated[0];
         printf("\nInterpolated Binary search, position: %d, steps: %d\n", interpolated_position, steps_interpolated[0]);
+
+        if(steps_interpolated[0] <= steps_binary[0])
+            number_victories_interpolated[0] += 1;
+
+        else
+            number_victories_binary[0] += 1; 
 
         if(interpolated_position != -1) {
             fprintf(output, "[%lld]B=%d,I=%d:Author:%s,Title:%s\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0], Books[binary_position].author, Books[binary_position].title);
@@ -225,10 +233,25 @@ int main(int argc, char* argv[]) {
     //Remenber to implement the trucated average of steps for each search algorithm
     int all_steps_binary[1];
     all_steps_binary[0] = 0;
+
     int all_steps_interpolated[1];
     all_steps_binary[0] = 0;
 
-    compare_search_algorithms(output, ISBN_array, number_of_books, ISBNs_to_search, number_ISBNs_to_search, Books, steps_binary, steps_interpolated, all_steps_binary, all_steps_interpolated);
+    int number_victories_binary[1];
+    number_victories_binary[0] = 0;
+
+    int number_victories_interpolated[1];
+    number_victories_interpolated[0] = 0; // pass it as argument of compare_search
+
+    compare_search_algorithms(output, ISBN_array, number_of_books, ISBNs_to_search, 
+    number_ISBNs_to_search, Books, steps_binary, steps_interpolated, 
+    all_steps_binary, all_steps_interpolated, number_victories_binary, number_victories_interpolated);
+
+    int average_steps_bynary = trunc(all_steps_binary[0]/number_ISBNs_to_search);
+    int average_steps_interpolated = trunc(all_steps_interpolated[0]/number_ISBNs_to_search);
+
+    fprintf(output, "BINARY=%d:%d\n", number_victories_binary[0], average_steps_bynary);
+    fprintf(output, "INTERPOLATION=%d:%d", number_victories_interpolated[0], average_steps_interpolated);
 
     fclose(input); 
     fclose(output);
