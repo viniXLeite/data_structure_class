@@ -35,7 +35,7 @@ FileInfo read_lines_based_on_number(FILE* input, FILE* output) {
         if (is_number(line)) {
             int count = atoi(line);
             FileInfo.number_of_lines = count;
-            FileInfo.array_of_lines = (char**) malloc(FileInfo.number_of_lines*51);
+            FileInfo.array_of_lines = (char**) malloc(FileInfo.number_of_lines*170);
 
             for (int i = 0; i < count; i++) {
                 if (fgets(line, sizeof(line), input)) {
