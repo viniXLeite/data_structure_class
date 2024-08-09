@@ -141,7 +141,7 @@ int interpolatedBinarySearch(long long int arr[], int n, long long int target, i
     while (low <= high) {
         counter += 1;
 
-        int pos = low + ((target - arr[low]) * (high - low)) / (arr[high] - arr[low]);
+        int pos = low + ((arr[high] - arr[low])) % (high - low + 1);
 
         if (pos < low || pos > high) {
             break;
@@ -213,7 +213,7 @@ int main(int argc, char* argv[]) {
     int number_ISBNs_to_search = File_ISBN_to_search.number_of_lines;
     long long int ISBNs_to_search[number_ISBNs_to_search];
     convert_ISBN_to_ll_int(File_ISBN_to_search.array_of_lines, number_ISBNs_to_search, ISBNs_to_search);
-    show_array(ISBNs_to_search, number_ISBNs_to_search);
+    //show_array(ISBNs_to_search, number_ISBNs_to_search);
 
     // Creates an array of Book and then stores BooksInfo informations on it
     int number_of_books = BooksInfo.number_of_lines;
@@ -225,7 +225,7 @@ int main(int argc, char* argv[]) {
     long long int ISBN_array[number_of_books];
     distribute_ISBNs(ISBN_array, Books, number_of_books);
     printf("--Distributed ISBNs--\n");    
-    show_array(ISBN_array, number_of_books);
+    //show_array(ISBN_array, number_of_books);
 
     int steps_binary[1];
     int steps_interpolated[1];

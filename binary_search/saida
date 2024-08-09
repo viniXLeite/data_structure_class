@@ -1,7 +1,7 @@
-[9780130224187]B=2,I=3:Author:Niklaus Wirth,Title:Algorithms + Data Structures = Programs
-[9781584884354]B=3,I=3:Author:Dinesh Mehta,Title:Handbook of Data Structures and Applications
-[1234567890123]B=3,I=0:ISBN_NOT_FOUND
-[9780201416077]B=3,I=4:Author:Gaston Gonnet,Title:Handbook of Algorithms and Data StrucHandbo
-[9786584884354]B=4,I=1:Author:Sigmund Freud,Title:Interpretation of dreams
+[9780130224187]B=2,I=7:Author:Niklaus Wirth,Title:Algorithms + Data Structures = Programs
+[9781584884354]B=3,I=2:Author:Dinesh Mehta,Title:Handbook of Data Structures and Applications
+[1234567890123]B=4,I=4:ISBN_NOT_FOUND
+[9780201416077]B=3,I=6:Author:Gaston Gonnet,Title:Handbook of Algorithms and Data StrucHandbo
+[9786584884354]B=4,I=3:Author:Sigmund Freud,Title:Interpretation of dreams
 BINARY=2:3
-INTERPOLATION=3:2
+INTERPOLATION=3:4
