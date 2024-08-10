@@ -154,6 +154,8 @@ int separateNumberFromString(const char *str) {
 }
 
 // Initialize the printers' slot, in order to store on it the docQueue components
+
+// Print out every printersSlot iteration 
 void initialize_printersSlot(int* printerSlot, int number_printers, Queue* docQueue_Pointer, Printing* Printing) {
     docQueue_Pointer->current = docQueue_Pointer->head;
 
@@ -180,6 +182,9 @@ int lowestArrayNumber(int printersSlot[], int number_printers) {
     return lowest;
 }
 
+// Implement a function to count the number of elements on printLogs[i] => if (number(printLogs[i]) == 1) => do not print ou anything, else => print out
+
+
 // Distribute the pages' number of each document of the queue in the printers' slot, and print out the printed ones on a output file
 void docDistributuion(FILE* output, int printersSlot[], int number_printers, Queue* docQueue, Printing* printing, char** printersName, Stack* printedPaperStack, Stack** printLogs) {
     for(int i = 0; i < number_printers; i++) {
@@ -191,8 +196,11 @@ void docDistributuion(FILE* output, int printersSlot[], int number_printers, Que
             fprintf(output, "[%s] ", printersName[i]);
 
             while (node != NULL) {
-                if (node->docName != NULL) {
-                    fprintf(output, "%s-%dp ", node->docName, node->pagesNumber);
+                if (node->docName != NULL && node != printLogs[i]->tail) {
+                    fprintf(output, ", %s-%dp", node->docName, node->pagesNumber);
+                }
+                else if (node->docName != NULL && (node == printLogs[i]->tail)) { // added
+                    fprintf(output, "%s-%dp", node->docName, node->pagesNumber);
                 }
                 node = node->previous;
             }

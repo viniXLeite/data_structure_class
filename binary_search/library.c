@@ -35,14 +35,14 @@ FileInfo read_lines_based_on_number(FILE* input, FILE* output) {
         if (is_number(line)) {
             int count = atoi(line);
             FileInfo.number_of_lines = count;
-            FileInfo.array_of_lines = (char**) malloc(FileInfo.number_of_lines*170);
+            FileInfo.array_of_lines = (char**) malloc(count*170);
 
             for (int i = 0; i < count; i++) {
                 if (fgets(line, sizeof(line), input)) {
                     line[strcspn(line, "\n")] = '\0';
                     FileInfo.array_of_lines[i] = (char*) malloc(strlen(line)+1);
                     strcpy(FileInfo.array_of_lines[i], line);
-                    printf("%s\n", FileInfo.array_of_lines[i]);
+                   // printf("%s\n", FileInfo.array_of_lines[i]);
                 }
             }
         } else {
@@ -79,7 +79,7 @@ void initialize_Books(Book *books, FileInfo BooksInfo, int number_of_books) {
         }
 
         books[i].ISBN = strtoll(temp_IBSN, NULL, 10);
-        printf("ISBN: %lld, Author: %s, Title: %s;\n", books[i].ISBN, books[i].author, books[i].title);
+        //printf("ISBN: %lld, Author: %s, Title: %s;\n", books[i].ISBN, books[i].author, books[i].title);
 
     }
 
@@ -94,73 +94,63 @@ void distribute_ISBNs(long long int* ISBN_array, Book *Books, int number_of_book
 
 
 void show_array(long long int* array, int j) {
-    for(int i = 0; i <= j-1; i++) {
-        if(i == 0) {
-            printf("[%lld, ", array[i]);
-        }
-        else if(i == j-1) {
-            printf("%lld]", array[i]);
-        }
-        else {
-            printf("%lld, ", array[i]);
-        }
+    printf("[");
+    for(int i = 0; i < j; i++) {
+        if(i > 0) printf(", ");
+        printf("%lld", array[i]);
     }
+    printf("]\n");
 }
-
 
 int regular_binarySearch(long long int *vector, int n, long long int x, int *steps_binary) {
-    int i = 0, j = n - 1;
-    int p = (i + j) / 2;
-    int counter = 0;
-
-    while (j >= i) {
-        counter += 1;  // Incrementa steps_binary a cada iteração
-
-        if (vector[p] == x) {
-            steps_binary[0] = counter;
-            return p;  // Retorna o índice se o elemento for encontrado
-        } else if (vector[p] > x) {
-            j = p - 1;
+    int i = 0, j = n - 1, counter = 0;
+    while (i <= j) {
+        counter++;
+        int mid = (i + j) / 2;
+        if (vector[mid] == x) {
+            *steps_binary = counter;
+            return mid;
+        } else if (vector[mid] < x) {
+            i = mid + 1;
         } else {
-            i = p + 1;
+            j = mid - 1;
         }
-        p = (i + j) / 2;
     }
-
-    steps_binary[0] = counter;
-    return -1;  // Retorna -1 se o elemento não for encontrado
+    *steps_binary = counter+1;
+    return -1;
 }
 
 
-int interpolatedBinarySearch(long long int arr[], int n, long long int target, int *steps_interpolated) {
-    int low = 0;
-    int high = n - 1;
-    int counter = 0;
-    // store the position ,the counter and the sum of all steps here. Use void func and pass 'result' as arg of this funtion 
-
-    while (low <= high) {
-        counter += 1;
-
-        int pos = low + ((arr[high] - arr[low])) % (high - low + 1);
-
-        if (pos < low || pos > high) {
-            break;
-        }
-
-        if (arr[pos] == target) {
-            steps_interpolated[0] = counter;
-            return pos;
-        }
-
-        if (arr[pos] > target) {
-            high = pos - 1;
-        } else {
-            low = pos + 1;
-        }
-    }
+int interpolated_search(long long int arr[], int n, long long int target, int *steps_interpolated) {
+    int i = 0;         
+    int j = n - 1;     
     
-    steps_interpolated[0] = counter;
-    return -1;
+    *steps_interpolated = 0; 
+
+    while (i <= j /*&& target >= arr[i] && target <= arr[j]*/) {
+        if (i == j) {
+            (*steps_interpolated)++; // added
+
+            if (arr[i] == target) {
+                return i;
+            }
+            return -1;
+        }
+        
+        int pos = i + ((arr[j] - arr[i]) % (j - i + 1));
+
+        (*steps_interpolated)++;
+
+        if (arr[pos] == target)
+            return pos;
+        
+        if (arr[pos] < target)
+            i = pos + 1;
+        else
+            j = pos - 1;
+    }
+    (*steps_interpolated)++; // added
+    return -1; 
 }
 
 void compare_search_algorithms(FILE* output, long long int *ISBN_array, int number_of_books, long long int *ISBN_to_search, 
@@ -174,11 +164,11 @@ void compare_search_algorithms(FILE* output, long long int *ISBN_array, int numb
     for(int i = 0; i <= number_ISBNs_to_search-1; i++) {
         binary_position = regular_binarySearch(ISBN_array, number_of_books, ISBN_to_search[i], steps_binary);
         all_steps_binary[0] += steps_binary[0];
-        printf("\n\nRegular Binary search, position: %d, steps: %d", binary_position, steps_binary[0]);
+        //printf("\n\nRegular Binary search, position: %d, steps: %d", binary_position, steps_binary[0]);
 
-        interpolated_position = interpolatedBinarySearch(ISBN_array, number_of_books, ISBN_to_search[i], steps_interpolated);
+        interpolated_position = interpolated_search(ISBN_array, number_of_books, ISBN_to_search[i], steps_interpolated);
         all_steps_interpolated[0] += steps_interpolated[0];
-        printf("\nInterpolated Binary search, position: %d, steps: %d\n", interpolated_position, steps_interpolated[0]);
+        //printf("\nInterpolated Binary search, position: %d, steps: %d\n", interpolated_position, steps_interpolated[0]);
 
         if(steps_interpolated[0] <= steps_binary[0])
             number_victories_interpolated[0] += 1;
@@ -188,11 +178,11 @@ void compare_search_algorithms(FILE* output, long long int *ISBN_array, int numb
 
         if(interpolated_position != -1) {
             fprintf(output, "[%lld]B=%d,I=%d:Author:%s,Title:%s\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0], Books[binary_position].author, Books[binary_position].title);
-            printf("[%lld]B=%d,I=%d:Author:%s,Title:%s\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0], Books[binary_position].author, Books[binary_position].title);
+            //printf("[%lld]B=%d,I=%d:Author:%s,Title:%s\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0], Books[binary_position].author, Books[binary_position].title);
         }
         else {
             fprintf(output, "[%lld]B=%d,I=%d:ISBN_NOT_FOUND\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0]);
-            printf("[%lld]B=%d,I=%d:ISBN_NOT_FOUND\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0]);
+            //printf("[%lld]B=%d,I=%d:ISBN_NOT_FOUND\n", ISBN_to_search[i], steps_binary[0], steps_interpolated[0]);
         }
     }
 
