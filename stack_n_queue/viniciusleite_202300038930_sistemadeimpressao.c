@@ -353,8 +353,10 @@ int main(int argc, char* argv[]) {
     }
     printf("\n--Ok initalize printsLogs--\n\n");
 
+    int lowestNumber;
+
     while (1) {
-        int lowestNumber = lowestArrayNumber(printersSlot, number_printers);
+        lowestNumber = lowestArrayNumber(printersSlot, number_printers);
         subtract_number_array(printersSlot, number_printers, lowestNumber);
         docDistributuion(output, printersSlot, number_printers, docNameQueue_Pointer, Printing, printers.linesArray, printedPapersStack_Pointer, printLogs);
         if (docNameQueue_Pointer->current == docNameQueue_Pointer->tail) {

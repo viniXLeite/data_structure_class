@@ -20,7 +20,6 @@ struct Request {
 struct Server {
     unsigned int number_of_occupied_indexs;
     string available_indexs[32];
-    //Stack log;
 };
 
 // formats each string to get the checksum and the print out versions
@@ -84,8 +83,8 @@ unsigned int check_sum(string str) {
     return checksum;
 }
 
-unsigned int server_index(unsigned int checksum, unsigned int max_capacity, unsigned int index) {
-    return ((7919 * checksum) + index * (104729 * checksum + 123)) % max_capacity;
+unsigned int server_index(unsigned int checksum, unsigned int number_of_servers, unsigned int index) {
+    return ((7919 * checksum) + index * (104729 * checksum + 123)) % number_of_servers;
 }
 
 int main(int argc, char* argv[]) {
@@ -100,17 +99,18 @@ int main(int argc, char* argv[]) {
     store_resquests_on_vector(input, servers_info.number_of_requests, requests);
     cout << "ok read_file" << endl;
 
-    cout << check_sum("ufs"); 
+    cout << check_sum("ufs") << endl; 
+    cout << server_index(96, 4000, 5);
+
 
     Server* servers = new Server[servers_info.number_of_servers];
-    // each server has to have a log stack
 
     /*
     for(int requests_index = 0; requests_index <= number_requests-1; i++)
             int double_hash_index = 0
-            while(1) int server_index_var = server_index(checksum, max_capacity, double_hash_index) if ok servers[server_index_var].available_indexs[index] => allocate esle index++ try again
-                if  servers[servers_index].available_indexs[index] full => server_index_var = server_index(checksum, max_capacity, double_hash_index+1)
-                if ok, addstack, print out server log so far
+            while(1) int server_index_var = server_index(checksum, number_of_servers, double_hash_index) if ok servers[server_index_var].available_indexs[index] => allocate esle index++ try again
+                if  servers[servers_index].available_indexs[index] full => server_index_var = server_index(checksum, number_of_servers, double_hash_index+1)
+
     */
 
     return 0;
