@@ -4,8 +4,6 @@
 
 using namespace std;
 
-//struct Stack
-
 struct Servers_info {
     unsigned int number_of_servers;
     unsigned int max_capacity;
@@ -19,7 +17,7 @@ struct Request {
 
 struct Server {
     unsigned int number_of_occupied_indexs;
-    string available_indexs[32];
+    string *available_indexs;
 };
 
 // formats each string to get the checksum and the print out versions
@@ -83,7 +81,7 @@ unsigned int check_sum(string str) {
     return checksum;
 }
 
-unsigned int server_index(unsigned int checksum, unsigned int number_of_servers, unsigned int index) {
+unsigned int double_hash(unsigned int checksum, unsigned int number_of_servers, unsigned int index) {
     return ((7919 * checksum) + index * (104729 * checksum + 123)) % number_of_servers;
 }
 
@@ -100,18 +98,73 @@ int main(int argc, char* argv[]) {
     cout << "ok read_file" << endl;
 
     cout << check_sum("ufs") << endl; 
-    cout << server_index(96, 4000, 5);
+    cout << double_hash(96, 4000, 5);
 
 
     Server* servers = new Server[servers_info.number_of_servers];
+    for(unsigned int i = 0; i <= servers_info.number_of_servers-1; i++) {
+        servers[i].available_indexs = new string[servers_info.max_capacity];
+    }
 
-    /*
-    for(int requests_index = 0; requests_index <= number_requests-1; i++)
-            int double_hash_index = 0
-            while(1) int server_index_var = server_index(checksum, number_of_servers, double_hash_index) if ok servers[server_index_var].available_indexs[index] => allocate esle index++ try again
-                if  servers[servers_index].available_indexs[index] full => server_index_var = server_index(checksum, number_of_servers, double_hash_index+1)
+    unsigned int double_hash_index;
+    unsigned int current_server;
+    unsigned int checksum;
+    unsigned int allocated;
+    unsigned int first_server;
 
-    */
+    for(int current_request = 0; current_request < servers_info.number_of_requests; current_request++) {
+
+        double_hash_index = 0;
+        checksum = check_sum(requests[current_request].checksum_str);
+        first_server = double_hash(checksum, servers_info.number_of_servers, 0);
+        
+        while (true) {
+            current_server = double_hash(checksum, servers_info.number_of_servers, double_hash_index);
+
+            // Verifica se o servidor tem espaço disponível
+            if (servers[current_server].number_of_occupied_indexs < 32) {
+                bool allocated = false;
+
+                // Tenta alocar a solicitação em uma das posições disponíveis
+                for (int i = 0; i < servers_info.max_capacity; i++) {
+
+                    if (servers[current_server].available_indexs[i].empty()) {  // Verifica se o índice está vazio
+
+                        if (first_server != current_server) output << "S"<< first_server << "->" << "S" << current_server << endl;
+
+                        servers[current_server].available_indexs[i] = requests[current_request].str_to_print;
+                        output << "[S" << current_server << "]" << " "; //<< servers[current_server].available_indexs[i] << endl;
+
+                        for(unsigned int log_index = 0; log_index <= servers_info.max_capacity-1; log_index++) {
+                            if (servers[current_server].available_indexs[log_index].empty() == false)
+                                if (log_index != servers_info.max_capacity-1 && servers[current_server].available_indexs[log_index+1].empty())
+                                output << servers[current_server].available_indexs[log_index];
+                                else
+                                    output << servers[current_server].available_indexs[log_index] << ", ";
+                        }
+
+                        output << endl;
+                        servers[current_server].number_of_occupied_indexs++;
+                        allocated = true;
+                        break;
+                    }
+
+                }
+
+                // Se alocado com sucesso, sai do loop
+                if (allocated) break;
+            }
+
+            // Se o servidor estiver cheio ou não conseguir alocar, incrementa o índice de hash duplo
+            double_hash_index++;
+
+            // Verificação adicional para evitar loops infinitos ou exceder o número de servidores
+            if (double_hash_index >= servers_info.number_of_servers) {
+                break;
+            }
+        }
+    }
+
 
     return 0;
-}
+} 
