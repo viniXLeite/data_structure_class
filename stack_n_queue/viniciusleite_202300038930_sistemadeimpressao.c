@@ -127,20 +127,27 @@ void addStack(Stack *stackList, char *name, int pagesNumber) {
     }
 
     stackNode->docName = (char*) malloc(strlen(name) + 1);
+    if (stackNode->docName == NULL) {
+        fprintf(stderr, "Erro ao alocar memória para docName\n");
+        free(stackNode); // Libera o nó já alocado antes de sair
+        exit(EXIT_FAILURE);
+    }
     strcpy(stackNode->docName, name);
     stackNode->pagesNumber = pagesNumber;
 
     if (stackList->head == NULL) {
         stackList->head = stackNode;
+        stackList->tail = stackNode;  // Corrige a inicialização da cauda
         stackNode->previous = NULL;
     } else {
         stackList->tail->next = stackNode;
         stackNode->previous = stackList->tail;
+        stackList->tail = stackNode;  // Atualiza a cauda
     }
 
     stackNode->next = NULL;
-    stackList->tail = stackNode;
 }
+
 
 int separateNumberFromString(const char *str) {
     char number_str[10];
@@ -156,7 +163,7 @@ int separateNumberFromString(const char *str) {
 // Initialize the printers' slot, in order to store on it the docQueue components
 
 // Print out every printersSlot iteration 
-void initialize_printersSlot(FILE* output, char** printersName, int* printerSlot, int number_printers, Queue* docQueue_Pointer, Printing* Printing) {
+void initialize_printersSlot(FILE* output, char** printersName, int* printerSlot, int number_printers, Queue* docQueue_Pointer, Printing* Printing, Stack** printLogs) {
     docQueue_Pointer->current = docQueue_Pointer->head;
 
     for(int i = 0; i <= number_printers-1; i++) { 
@@ -168,6 +175,8 @@ void initialize_printersSlot(FILE* output, char** printersName, int* printerSlot
         strcpy(Printing[i].docName, docQueue_Pointer->current->docName);
         Printing[i].number_pages = docQueue_Pointer->current->number_pages;
         fprintf(output, "[%s] %s-%dp\n", printersName[i], Printing[i].docName, Printing[i].number_pages );
+        addStack(printLogs[i], Printing[i].docName, Printing[i].number_pages);
+
         docQueue_Pointer->current = docQueue_Pointer->current->next;
     }
 
@@ -188,67 +197,58 @@ int lowestArrayNumber(int printersSlot[], int number_printers) {
 
 // Distribute the pages' number of each document of the queue in the printers' slot, and print out the printed ones on a output file
 void docDistributuion(FILE* output, int printersSlot[], int number_printers, Queue* docQueue, Printing* printing, char** printersName, Stack* printedPaperStack, Stack** printLogs) {
-    for(int i = 0; i < number_printers; i++) {
-        if(printersSlot[i] == 0) {
+    for (int i = 0; i < number_printers; i++) {
+        if (printersSlot[i] == 0) {
+            // Adiciona o documento à pilha de papel impresso
             addStack(printedPaperStack, printing[i].docName, printing[i].number_pages);
-            addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
 
-            if(printLogs[i]->head->next != NULL) {
+            if (docQueue->current == docQueue->tail) {
+                // Processa o último documento da fila
+                printersSlot[i] = docQueue->current->number_pages;
+                strcpy(printing[i].docName, docQueue->current->docName);
+                printing[i].number_pages = docQueue->current->number_pages;
 
+                // Adiciona o documento ao log de impressão
+                addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
                 StackNode* node = printLogs[i]->tail;
                 fprintf(output, "[%s] ", printersName[i]);
 
                 while (node != NULL) {
-                    if (node->docName != NULL && node != printLogs[i]->tail) {
-                        fprintf(output, ", %s-%dp", node->docName, node->pagesNumber);
-                    }
-                    else if (node->docName != NULL && (node == printLogs[i]->tail)) { // added
-                        fprintf(output, "%s-%dp", node->docName, node->pagesNumber);
-                    }
+                    fprintf(output, "%s-%dp", node->docName, node->pagesNumber);
                     node = node->previous;
+                    if (node != NULL) {
+                        fprintf(output, ", ");
+                    }
                 }
                 fprintf(output, "\n");
+                return;
+            } else {
+                // Processa o próximo documento da fila
+                printersSlot[i] = docQueue->current->number_pages;
+                strcpy(printing[i].docName, docQueue->current->docName);
+                printing[i].number_pages = docQueue->current->number_pages;
 
-                if(docQueue->current == docQueue->tail) {
-                    printersSlot[i] = docQueue->current->number_pages;
-                    strcpy(printing[i].docName, docQueue->current->docName);
-                    printing[i].number_pages = docQueue->current->number_pages;
-                    return;
-                } else {
-                        printersSlot[i] = docQueue->current->number_pages;
-                        strcpy(printing[i].docName, docQueue->current->docName);
-                        printing[i].number_pages = docQueue->current->number_pages;
-                        docQueue->current = docQueue->current->next;
-                }
+                // Adiciona o documento ao log de impressão
+                addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
+                docQueue->current = docQueue->current->next;
             }
 
-            else {
-                StackNode* node = printLogs[i]->tail;
+            // Imprime o log de documentos
+            StackNode* node = printLogs[i]->tail;
+            fprintf(output, "[%s] ", printersName[i]);
 
-                while (node != NULL) {
-                    if (node->docName != NULL && node != printLogs[i]->tail) {
-                    }
-                    else if (node->docName != NULL && (node == printLogs[i]->tail)) { // added
-                    }
-                    node = node->previous;
-                }
-
-                if(docQueue->current == docQueue->tail) {
-                    printersSlot[i] = docQueue->current->number_pages;
-                    strcpy(printing[i].docName, docQueue->current->docName);
-                    printing[i].number_pages = docQueue->current->number_pages;
-                    return;
-                } else {
-                        printersSlot[i] = docQueue->current->number_pages;
-                        strcpy(printing[i].docName, docQueue->current->docName);
-                        printing[i].number_pages = docQueue->current->number_pages;
-                        docQueue->current = docQueue->current->next;
+            while (node != NULL) {
+                fprintf(output, "%s-%dp", node->docName, node->pagesNumber);
+                node = node->previous;
+                if (node != NULL) {
+                    fprintf(output, ", ");
                 }
             }
-
+            fprintf(output, "\n");
         }
     }
 }
+
 
 void subtract_number_array(int printersSlot[], int number_printers, int lowestArrayNumber) {
     for(int i = 0; i < number_printers; i++)
@@ -259,19 +259,7 @@ void subtract_number_array(int printersSlot[], int number_printers, int lowestAr
 void last_compare(FILE *output, int printersSlot[], int number_printers, int lowestArrayNumber, Printing *printing, char** printersName, Stack** printLogs, Stack* printedPaperStack) {
     for(int i = 0; i < number_printers; i++) {
         if(printersSlot[i] == 0) {
-            addStack(printLogs[i], printing[i].docName, printing[i].number_pages);
             addStack(printedPaperStack, printing[i].docName, printing[i].number_pages);
-
-            StackNode* node = printLogs[i]->tail;
-            fprintf(output, "[%s] ", printersName[i]);
-
-            while (node != NULL) {
-                if (node->docName != NULL) {
-                    fprintf(output, "%s-%dp ", node->docName, node->pagesNumber);
-                }
-                node = node->previous;
-            }
-            fprintf(output, "\n");
         }
     }
 }
@@ -340,18 +328,17 @@ int main(int argc, char* argv[]) {
         nodeQueueDoc = nodeQueueDoc->next;
     }
 
-    // Declaress printersSlot and initializes it and treats the case of number_documents < number_printers
-    int printersSlot[number_printers];
-    Printing Printing[number_printers];
-    initialize_printersSlot(output, printers.linesArray, printersSlot, number_printers, docNameQueue_Pointer, Printing);
-    printf("\n--PrintesSlot--\n");
-
     Stack** printLogs = malloc(sizeof(Stack*) * number_printers); 
     for(int i = 0; i < number_printers; i++) {
         printLogs[i] = malloc(sizeof(Stack)); // Itialize a stack for each printer
         initialize_Stack(printLogs[i]);
     }
     printf("\n--Ok initalize printsLogs--\n\n");
+    // Declaress printersSlot and initializes it and treats the case of number_documents < number_printers
+    int printersSlot[number_printers];
+    Printing Printing[number_printers];
+    initialize_printersSlot(output, printers.linesArray, printersSlot, number_printers, docNameQueue_Pointer, Printing, printLogs);
+    printf("\n--PrintesSlot--\n");
 
     int lowestNumber;
 
@@ -359,17 +346,18 @@ int main(int argc, char* argv[]) {
         lowestNumber = lowestArrayNumber(printersSlot, number_printers);
         subtract_number_array(printersSlot, number_printers, lowestNumber);
         docDistributuion(output, printersSlot, number_printers, docNameQueue_Pointer, Printing, printers.linesArray, printedPapersStack_Pointer, printLogs);
+        
         if (docNameQueue_Pointer->current == docNameQueue_Pointer->tail) {
             lowestNumber = lowestArrayNumber(printersSlot, number_printers);
             subtract_number_array(printersSlot, number_printers, lowestNumber);
             docDistributuion(output, printersSlot, number_printers, docNameQueue_Pointer, Printing, printers.linesArray, printedPapersStack_Pointer, printLogs);
 
-            for (int i = 0; i < number_printers - 1; i++) {
+            for (int i = 0; i < number_printers - 57; i++) {
                 lowestNumber = lowestArrayNumber(printersSlot, number_printers);
                 subtract_number_array(printersSlot, number_printers, lowestNumber);
                 last_compare(output, printersSlot, number_printers, lowestNumber, Printing, printers.linesArray, printLogs, printedPapersStack_Pointer);
                 replaceZeros(printersSlot, number_printers);
-                last_compare(output, printersSlot, number_printers, lowestNumber, Printing, printers.linesArray, printLogs, printedPapersStack_Pointer);
+                //last_compare(output, printersSlot, number_printers, lowestNumber, Printing, printers.linesArray, printLogs, printedPapersStack_Pointer);
             }
            
             break;
@@ -378,21 +366,21 @@ int main(int argc, char* argv[]) {
 
     fprintf(output,"%d-p\n", total_pages);
     printf("%d-p\n", total_pages);
+
     printedPapersStack_Pointer->current = printedPapersStack_Pointer->tail;
 
-    while (1) {
+
+    while (printedPapersStack_Pointer->current != NULL) {
+        fprintf(output, "%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
+        
         if (printedPapersStack_Pointer->current == printedPapersStack_Pointer->head) {
-            fprintf(output, "%s-%dp\n", printedPapersStack_Pointer->head->docName, printedPapersStack_Pointer->head->pagesNumber);
-
             break;
-        } else {
-            fprintf(output,"%s-%dp\n", printedPapersStack_Pointer->current->docName, printedPapersStack_Pointer->current->pagesNumber);
-            printedPapersStack_Pointer->current = printedPapersStack_Pointer->current->previous;
         }
+        printedPapersStack_Pointer->current = printedPapersStack_Pointer->current->previous;
     }
+    
 
-    // it's not printing the last documents in the printersSlot
-    printedPapersStack_Pointer->current = printedPapersStack_Pointer->tail;
+
     
     fclose(input);
     fclose(output);

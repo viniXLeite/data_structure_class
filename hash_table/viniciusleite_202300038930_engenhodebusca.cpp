@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
 
                             if (servers[current_server].available_indexs[log_index].empty() == false) {
                                 if (log_index != servers_info.max_capacity-1 && servers[current_server].available_indexs[log_index+1].empty())
-                                output << servers[current_server].available_indexs[log_index];
+                                    output << servers[current_server].available_indexs[log_index];
                                 else
                                     output << servers[current_server].available_indexs[log_index] << ", ";
                             }
