@@ -61,7 +61,6 @@ Servers_info get_servers_info(ifstream &input) {
 
 // Distribute the read reuests in a Request type vector
 void store_resquests_on_vector(ifstream &input, unsigned int number_of_requests, Request* Requests) {
-
     string str;
     Request rqt;
 
