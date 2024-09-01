@@ -16,23 +16,17 @@ class AVL_Node {
 
     AVL_Node (): word(""), balance_factor_variable(0),left(nullptr), right(nullptr), parent(nullptr) {}
 
-    void balance_factor_counter() {
-        unsigned int left_counter = 0;
-        unsigned int right_counter = 0;
-        
-        if(left != NULL) {
-            left_counter++;
-            if(left->left != NULL || left->right != NULL)
-                left_counter++;    
-        }
+    int get_height(AVL_Node* node) {
+        if (node == nullptr) return 0;
+        int left_height = (node->left == nullptr) ? 0 : node->left->balance_factor_variable + 1;
+        int right_height = (node->right == nullptr) ? 0 : node->right->balance_factor_variable + 1;
+        return max(left_height, right_height);
+    }
 
-        if(right != NULL) {
-            right_counter++;
-            if(right->right != NULL || right->left != NULL)
-                right_counter++;
-        }
-        // VERIFIES IF IT ZERO INITIALIZED
-        balance_factor_variable = (right_counter - left_counter);
+    void balance_factor_counter() {
+        int left_height = get_height(left);
+        int right_height = get_height(right);
+        balance_factor_variable = right_height - left_height;
     }
 
     void change_balance_factor() {
@@ -47,7 +41,7 @@ class AVL_Node {
         } 
     }
 
-    void left_rotation(AVL_Node* root) {
+    void left_rotation(AVL_Node*& root) {
         AVL_Node* axis = root->right;
         root->right = axis->left;
         axis->left = root;
@@ -56,7 +50,7 @@ class AVL_Node {
         root->change_balance_factor();
     }
 
-    void right_rotation(AVL_Node* root) {
+    void right_rotation(AVL_Node*& root) {
         AVL_Node* axis = root->left;
         root->left = axis->right;
         axis->right = root;
@@ -75,31 +69,19 @@ class AVL_Node {
     }
 
     void decide_balance_technique(AVL_Node* node) {
-        if(node->balance_factor_variable > 0 && node->balance_factor_variable > 0) {
+        if (node->balance_factor_variable > 1) {
+            if (node->right->balance_factor_variable < 0) {
+                right_rotation(node->right);
+            }
             left_rotation(node);
-            node->change_balance_factor();
-            return;
-        }
-
-        else if(node->balance_factor_variable > 0 && node->balance_factor_variable < 0) {
+        } else if (node->balance_factor_variable < -1) {
+            if (node->left->balance_factor_variable > 0) {
+                left_rotation(node->left);
+            }
             right_rotation(node);
-            left_rotation(node);
-            node->change_balance_factor();
-            return;
-        }
-        
-        else if(node->balance_factor_variable < 0 && node->balance_factor_variable < 0) {
-            right_rotation(node);
-            node->change_balance_factor();
-            return;
-        }
-        
-        else {
-            left_rotation(node);
-            right_rotation(node);
-            node->change_balance_factor();
         }
     }
+
     // adjust parent node
     // creates a function that verifies if any node has balance_factor_var greater than 1
     // O recalculo do fator de balanceamento é necessário apenas para os nós no caminho de volta da inserção até a raiz e, possivelmente, alguns nós afetados por rotações.
@@ -152,8 +134,40 @@ class AVL_Node {
         }
     }
     // search function
-
 };
+
+Dictionary get_dictionary(ifstream &input, unsigned int number_of_words) {
+    Dictionary dict;
+    unsigned int number_of_synonyms;
+
+    dict.word = new string[number_of_words];
+    dict.number_of_synonyms = new string[number_of_words];
+    dict.synonyms = new string[number_of_words];
+
+    string read_line;
+    unsigned int pos;
+
+    for(unsigned int i = 0; i < number_of_words; i++) {
+        getline(input, read_line);
+
+        pos = read_line.find(" ");
+        dict.word[i] = read_line.substr(0, pos);
+
+        read_line = read_line.substr(pos+1);
+        pos = read_line.find(" ");
+        
+        dict.number_of_synonyms[i] = read_line.substr(0, pos);
+        dict.synonyms[i] = read_line.substr(pos+1);
+    }
+
+    return dict;
+}
+
+void get_words_search(ifstream &input, string* words_to_search, unsigned int number_of_words_search) {
+    for(int i = 0; i < number_of_words_search; i++) {
+        getline(input, words_to_search[i]);
+    }
+}
 
 int main() {
     return 0;
