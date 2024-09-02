@@ -5,6 +5,12 @@
 
 using namespace std;
 
+struct Dictionary {
+    string* word;
+    string* number_of_synonyms;
+    string* synonyms;
+};
+
 class AVL_Node {
     public:
         string word;
@@ -169,7 +175,31 @@ void get_words_search(ifstream &input, string* words_to_search, unsigned int num
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    ifstream input(argv[1]);
+    ofstream ouput(argv[2]);
+
+    unsigned int number_of_words;
+    input >> number_of_words;
+    input.ignore();
+
+    Dictionary dict = get_dictionary(input, number_of_words);
+
+    for(unsigned int i = 0; i < number_of_words; i++) {
+        ouput << dict.word[i] << ", Synonyms: " << dict.synonyms[i] << endl; // add to the tree
+    }
+    
+    unsigned int number_of_words_search;
+    input >> number_of_words_search;
+    input.ignore();
+
+    string words_to_search[number_of_words];
+    get_words_search(input, words_to_search, number_of_words_search);
+
+    for(int i= 0; i < number_of_words_search; i++) {
+        ouput << words_to_search[i] << endl; // search function
+    }
+
     return 0;
 }
 
