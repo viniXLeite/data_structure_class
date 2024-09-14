@@ -6,7 +6,7 @@ using namespace std;
 
 struct Dictionary {
     string* word;
-    string* number_of_synonyms;
+    int* number_of_synonyms;
     string* synonyms;
 };
 
@@ -15,24 +15,46 @@ Dictionary get_dictionary(ifstream &input, unsigned int number_of_words) {
     unsigned int number_of_synonyms;
 
     dict.word = new string[number_of_words];
-    dict.number_of_synonyms = new string[number_of_words];
+    dict.number_of_synonyms = new int[number_of_words];
     dict.synonyms = new string[number_of_words];
 
     string read_line;
+    string synonyms_w_wspace;
+    string temp_number_of_synonyms;
     unsigned int pos;
+    unsigned int temp_pos;
 
     for(unsigned int i = 0; i < number_of_words; i++) {
         getline(input, read_line);
 
+        // Obter a primeira palavra (antes do primeiro espaço)
         pos = read_line.find(" ");
         dict.word[i] = read_line.substr(0, pos);
 
-        read_line = read_line.substr(pos+1);
+        // Remover a primeira palavra e continuar
+        read_line = read_line.substr(pos + 1);
         pos = read_line.find(" ");
-        
-        dict.number_of_synonyms[i] = read_line.substr(0, pos);
-        dict.synonyms[i] = read_line.substr(pos+1);
+
+        // Obter o número de sinônimos
+        temp_number_of_synonyms = read_line.substr(0, pos);
+        dict.number_of_synonyms[i] = stoi(temp_number_of_synonyms);
+        cout << "--" << dict.number_of_synonyms[i] << "--" << endl;
+
+        // Obter a sequência de sinônimos
+        synonyms_w_wspace = read_line.substr(pos + 1);
+
+        // Substituir todos os espaços por vírgulas
+        for (size_t j = 0; j < synonyms_w_wspace.size(); j++) {
+            if (synonyms_w_wspace[j] == ' ') {
+                synonyms_w_wspace[j] = ',';
+            }
+        }
+
+        // Armazenar os sinônimos no dicionário
+        dict.synonyms[i] = synonyms_w_wspace;
+        cout << dict.synonyms[i] << endl;
     }
+
 
     return dict;
 }
