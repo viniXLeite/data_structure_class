@@ -10,6 +10,7 @@ class BTreeNode
     BTreeNode **C; // An array of child pointers
     int n;     // Current number of keys
     bool leaf; // Is true when node is leaf. Otherwise false
+
     public:
         BTreeNode(int _t, bool _leaf);   // Constructor
 
@@ -26,7 +27,7 @@ class BTreeNode
         void traverse();
 
         // A function to search a key in the subtree rooted with this node.
-        BTreeNode *search(string k);   // returns NULL if k is not present.
+        string *search(string k);   // returns NULL if k is not present.
 
 // Make BTree friend of this so that we can access private members of this
 // class in BTree functions
@@ -48,7 +49,7 @@ public:
     {  if (root != NULL) root->traverse(); }
 
     // function to search a key in this tree
-    BTreeNode* search(string k)
+    string* search(string k)
     {  return (root == NULL)? NULL : root->search(k); }
 
     // The main function that inserts a new key in this B-Tree
@@ -64,7 +65,7 @@ BTreeNode::BTreeNode(int t1, bool leaf1)
 
     // Allocate memory for maximum number of possible keys
     // and child pointers
-    keys = new string[2*t-1];
+    keys = new string[4*t-1];
     C = new BTreeNode *[2*t];
 
     // Initialize the number of keys as 0
@@ -92,7 +93,7 @@ void BTreeNode::traverse()
 }
 
 // Function to search key k in subtree rooted with this node
-BTreeNode *BTreeNode::search(string k)
+string *BTreeNode::search(string k)
 {
     // Find the first key greater than or equal to k
     int i = 0;
@@ -101,7 +102,7 @@ BTreeNode *BTreeNode::search(string k)
 
     // If the found key is equal to k, return this node
     if (keys[i] == k)
-        return this;
+        return this->keys;
 
     // If key is not found here and this is a leaf node
     if (leaf == true)
@@ -243,7 +244,7 @@ void BTreeNode::splitChild(int i, BTreeNode *y)
 // Driver program to test above functions
 int main()
 {
-    BTree t(3); // A B-Tree with minimum degree 3
+    BTree t(1); // A B-Tree with minimum degree 3
     t.insert("10");
     t.insert("20");
     t.insert("5");
@@ -257,7 +258,7 @@ int main()
     t.traverse();
 
     string k = "6";
-    (t.search(k) != NULL)? cout << "\nPresent" : cout << "\nNot Present";
+    (t.search(k) != NULL)? cout << "\n" << t.search(k)[0] : cout << "\nNot Present";
 
     k = 15;
     (t.search(k) != NULL)? cout << "\nPresent" : cout << "\nNot Present";
