@@ -94,28 +94,55 @@ void searchWordsByPrefix(NodeTrieTree* root, string key) {
         Uso um for para fazer isso a quantidade de vezes necessaria (verificar, acho que ta errado)
         no caso de um char ter dois outros filhos
     */
-    unsigned int number_of_repetitions = current->addedChars.length();
-    for(unsigned int i = 0; i < number_of_repetitions; i++) {
+    NodeTrieTree* initial = returnPrefixNode(root, key);
+    while(true) {
         
-        cout << "\nsearch: " <<prefix;
-        current = returnPrefixNode(root, key);
-        
-        while (true) {
-            if(current->alphabet[current->addedChars[0]-'a']->wordEnd == false) {
-                if (current->alphabet[current->addedChars[0]-'a']->addedChars != "") {
-                    cout << current->addedChars[0]; // (1)
-                    current = current->alphabet[current->addedChars[0]-'a']; // (2)
-                    if(current->parent->addedChars.substr(1) != "") current->parent->addedChars = current->parent->addedChars.substr(1); // (3)
-                    if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
+        if (current->addedChars.length() != 1) {
+            cout << "\nsearch: " <<prefix;
+            current = returnPrefixNode(root, key);
+            
+            while (true) {
+                if(current->alphabet[current->addedChars[0]-'a']->wordEnd == false) {
+                    if (current->alphabet[current->addedChars[0]-'a']->addedChars != "") {
+                        cout << current->addedChars[0]; // (1)
+                        current = current->alphabet[current->addedChars[0]-'a']; // (2)
+                        if(current->parent->addedChars.substr(1) != "") current->parent->addedChars = current->parent->addedChars.substr(1); // (3)
+                        if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
+                    }
                 }
-            }
-            else {
-                cout << current->alphabet[current->addedChars[0]-'a']->addedChars[0] << current->addedChars[0];
-                if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
-                break;
-            }
+                else {
+                    cout << current->alphabet[current->addedChars[0]-'a']->addedChars[0] << current->addedChars[0];
+                    if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
+                    break;
+                }
 
+            }
         }
+
+        // ajeitar essa repetição ta ridiculo if (current->addedChars.length() != 1)
+        else {
+            cout << "\nsearch: " <<prefix;
+            current = returnPrefixNode(root, key);
+            while (true) {
+                
+                if(current->alphabet[current->addedChars[0]-'a']->wordEnd == false) {
+                    if (current->alphabet[current->addedChars[0]-'a']->addedChars != "") {
+                        cout << current->addedChars[0]; // (1)
+                        current = current->alphabet[current->addedChars[0]-'a']; // (2)
+                        if(current->parent->addedChars.substr(1) != "") current->parent->addedChars = current->parent->addedChars.substr(1); // (3)
+                        if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
+                    }
+                }
+                else {
+                    cout << current->alphabet[current->addedChars[0]-'a']->addedChars[0] << current->addedChars[0];
+                    if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
+                    break;
+                }
+
+            }
+            break;
+        }
+
     }
     
 }
@@ -131,9 +158,11 @@ int main() {
     insertNode(root, "loja");
     insertNode(root, "logica");
     insertNode(root, "lista");
-    insertNode(root, "estado");
+    insertNode(root, "listada");
 
     searchWordsByPrefix(root, "lombada");
+    searchWordsByPrefix(root, "lis"); // da problema nesse caso meo
+    // so alterar os if da substr para so usar esse metodo se o addedChars filho for igual a um
 
     return 0;
 }
