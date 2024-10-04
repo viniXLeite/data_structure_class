@@ -62,92 +62,33 @@ string findPrefix(NodeTrieTree* root, string key) {
     return prefix;
 }
 
-NodeTrieTree* returnPrefixNode(NodeTrieTree* root, string key) {
-    NodeTrieTree* current = root;
-
-    for(char k:key) {
-        if(current->alphabet[k-'a'] != nullptr) {
-            current = current->alphabet[k-'a'];
-
-        }
-    }
-    return current;
-}
-
-void searchWordsByPrefix(NodeTrieTree* root, string key) {
-    NodeTrieTree* current = returnPrefixNode(root, key);
-    string prefix = findPrefix(root, key);
-
-    /*  estou utilizando a função returnPrefixNode para pegar o ponteiro do ultimo char do prefixo de key
-        Implementei ponteiros para o pai 
-        checo se o ponteiro filho da primeiro posição dos chars adicionados nao e uma palavra (current->alphabet[current->addedChars[0]-'a']->wordEnd)
-        e se é diferente de nulo;
-        caso nao: 
-            (1) imprimo o primeiro char dessa string de chars adicionados addedChars, 
-            (2) passo o current para o filho daquela posição char,
-            (3) utilizo o metodo substr para dar um shift left e retirar o primeiro caractere de addedchars de current e do pai de current 
-        
-        caso sim:
-            imprimo um char e do um shift left no addedChars do current que no caso é o ultimo termo da palavra
-
-        
-        Uso um for para fazer isso a quantidade de vezes necessaria (verificar, acho que ta errado)
-        no caso de um char ter dois outros filhos
-    */
-    NodeTrieTree* initial = returnPrefixNode(root, key);
-    while(true) {
-        
-        if (current->addedChars.length() != 1) {
-            cout << "\nsearch: " <<prefix;
-            current = returnPrefixNode(root, key);
-            
-            while (true) {
-                if(current->alphabet[current->addedChars[0]-'a']->wordEnd == false) {
-                    if (current->alphabet[current->addedChars[0]-'a']->addedChars != "") {
-                        cout << current->addedChars[0]; // (1)
-                        current = current->alphabet[current->addedChars[0]-'a']; // (2)
-                        if(current->parent->addedChars.substr(1) != "") current->parent->addedChars = current->parent->addedChars.substr(1); // (3)
-                        if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
-                    }
-                }
-                else {
-                    cout << current->alphabet[current->addedChars[0]-'a']->addedChars[0] << current->addedChars[0];
-                    if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
-                    break;
-                }
-
-            }
-        }
-
-        // ajeitar essa repetição ta ridiculo if (current->addedChars.length() != 1)
-        else {
-            cout << "\nsearch: " <<prefix;
-            current = returnPrefixNode(root, key);
-            while (true) {
-                
-                if(current->alphabet[current->addedChars[0]-'a']->wordEnd == false) {
-                    if (current->alphabet[current->addedChars[0]-'a']->addedChars != "") {
-                        cout << current->addedChars[0]; // (1)
-                        current = current->alphabet[current->addedChars[0]-'a']; // (2)
-                        if(current->parent->addedChars.substr(1) != "") current->parent->addedChars = current->parent->addedChars.substr(1); // (3)
-                        if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
-                    }
-                }
-                else {
-                    cout << current->alphabet[current->addedChars[0]-'a']->addedChars[0] << current->addedChars[0];
-                    if(current->addedChars.substr(1) != "") current->addedChars = current->addedChars.substr(1);
-                    break;
-                }
-
-            }
-            break;
-        }
-
+void collectWords(NodeTrieTree* node, string prefix) {
+    if (node->wordEnd) {
+        cout << prefix << endl;  // Aqui você pode adicionar a palavra à lista de resultados
     }
     
+    for (int i = 0; i < 26; i++) {
+        if (node->alphabet[i]) {
+            collectWords(node->alphabet[i], prefix + char('a' + i));
+        }
+    }
 }
 
+// Função para buscar palavras com um determinado prefixo
+void searchWordsWithPrefix(NodeTrieTree* root, const string& prefix) {
+    NodeTrieTree* current = root;
+    for (char ch : prefix) {
+        int index = ch - 'a';
+        if (!current->alphabet[index]) {
+            cout << "-" << endl;
+            return;
+        }
+        current = current->alphabet[index];
+    }
 
+    // Se chegamos ao fim do prefixo, coletar todas as palavras abaixo desse nó
+    collectWords(current, prefix);
+}
 
 int main() {
     NodeTrieTree* root = new NodeTrieTree();
@@ -159,10 +100,14 @@ int main() {
     insertNode(root, "logica");
     insertNode(root, "lista");
     insertNode(root, "listada");
+    insertNode(root, "lisbela");
+    insertNode(root, "lisboa");
+    insertNode(root, "liscas");
 
-    searchWordsByPrefix(root, "lombada");
-    searchWordsByPrefix(root, "lis"); // da problema nesse caso meo
     // so alterar os if da substr para so usar esse metodo se o addedChars filho for igual a um
+    // testar outras palavras 
+    cout << "\n";
+    searchWordsWithPrefix(root, "lis");
 
     return 0;
 }
