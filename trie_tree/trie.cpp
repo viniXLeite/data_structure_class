@@ -4,13 +4,9 @@
 
 using namespace std;
 
-string realAlphabet = "abcdefghijklmnopqrstuvwxyz";
-
 struct NodeTrieTree {
     NodeTrieTree* alphabet[26];
-    NodeTrieTree* parent;
-    string addedChars = "";
-    bool wordEnd;
+    bool wordEnd; // marks the end of a word
 
     NodeTrieTree() {
         wordEnd = false;
@@ -25,36 +21,39 @@ void insertNode(NodeTrieTree* root, string key) {
     NodeTrieTree* current = root;
 
     for(char k: key) {
-        if(current->alphabet[k-'a'] == nullptr) {
-            NodeTrieTree* newNoode = new NodeTrieTree();
-            current->alphabet[k-'a'] = newNoode;
-            current->alphabet[k-'a']->parent = current;
-            current->addedChars = current->addedChars+k;
+        if(!current->alphabet[k-'a']) {
+            NodeTrieTree* newNode = new NodeTrieTree();
+            current->alphabet[k-'a'] = newNode; // creates a newNode if the current aplhabet position is empty
         }
+
         current = current->alphabet[k-'a'];
     }
     current->wordEnd = true;
 }
 
-void searchNode(NodeTrieTree* root, string key) {
-    NodeTrieTree* current = root;
-    cout << "\n";
-
-    for(char k: key) {
-        if(current->alphabet[k-'a'] != nullptr) {
-            cout << k;
-            current = current->alphabet[k-'a'];
+void collectWords(NodeTrieTree* node, string prefix, unsigned int prefix_lenght, string& array_collectedWords) {
+    if (node->wordEnd) {
+        if (!array_collectedWords.empty()) array_collectedWords.append(","); 
+        array_collectedWords.append(prefix); // concatenates all the found words in a string
+    }
+    
+    for (int i = 0; i < 26; i++) {
+        if (node->alphabet[i]) {
+            if((prefix + char('a' + i)).length() > prefix_lenght*2) continue; // limit the number of call in the recursive function 
+            collectWords(node->alphabet[i], prefix + char('a' + i), prefix_lenght, array_collectedWords);
         }
-        else cout << " (not found) ";
-    }     
+    }
 }
 
+// function responsible to find a substring present in the tree given a string(key)
 string findPrefix(NodeTrieTree* root, string key) {
     NodeTrieTree* current = root;
     string prefix = "";
 
     for(char k:key) {
-        if(current->alphabet[k-'a'] != nullptr) {
+        if (!current->alphabet[k-'a']) break;
+
+        else {
             prefix = prefix+k;
             current = current->alphabet[k-'a'];
         }
@@ -62,33 +61,25 @@ string findPrefix(NodeTrieTree* root, string key) {
     return prefix;
 }
 
-void collectWords(NodeTrieTree* node, string prefix) {
-    if (node->wordEnd) {
-        cout << prefix << endl;  // Aqui você pode adicionar a palavra à lista de resultados
-    }
-    
-    for (int i = 0; i < 26; i++) {
-        if (node->alphabet[i]) {
-            collectWords(node->alphabet[i], prefix + char('a' + i));
-        }
-    }
-}
-
-// Função para buscar palavras com um determinado prefixo
 void searchWordsWithPrefix(NodeTrieTree* root, const string& prefix) {
     NodeTrieTree* current = root;
-    for (char ch : prefix) {
+    string key;
+    string array_collectedWords = "";
+
+    //key = findPrefix(root, prefix);
+    key = findPrefix(root, prefix);
+
+    for (char ch : key) {
         int index = ch - 'a';
-        if (!current->alphabet[index]) {
-            cout << "-" << endl;
-            return;
-        }
         current = current->alphabet[index];
     }
 
-    // Se chegamos ao fim do prefixo, coletar todas as palavras abaixo desse nó
-    collectWords(current, prefix);
-}
+    collectWords(current, key, key.length(), array_collectedWords);
+    
+    cout << prefix << ":";
+    if (!array_collectedWords.empty()) cout << array_collectedWords << endl;
+    else cout << "-" << endl;
+}   
 
 int main() {
     NodeTrieTree* root = new NodeTrieTree();
@@ -99,15 +90,29 @@ int main() {
     insertNode(root, "loja");
     insertNode(root, "logica");
     insertNode(root, "lista");
-    insertNode(root, "listada");
-    insertNode(root, "lisbela");
-    insertNode(root, "lisboa");
-    insertNode(root, "liscas");
+    insertNode(root, "listzaoda");
+    insertNode(root, "listede");
+    insertNode(root, "listo");
+    insertNode(root, "liso");
+    insertNode(root, "listcasadejoao");
 
-    // so alterar os if da substr para so usar esse metodo se o addedChars filho for igual a um
-    // testar outras palavras 
+    insertNode(root, "facil");
+    insertNode(root, "simples");
+    insertNode(root, "trivial");
+    insertNode(root, "banal");
+    insertNode(root, "bacana");
+    insertNode(root, "banano");
+    insertNode(root, "banda");
+    insertNode(root, "facilimo");
+
     cout << "\n";
-    searchWordsWithPrefix(root, "lis");
+    //searchWordsWithPrefix(root, "listxdo");
+
+    searchWordsWithPrefix(root, "facin");
+    searchWordsWithPrefix(root, "ban");
+    searchWordsWithPrefix(root, "exemplo");
+    searchWordsWithPrefix(root, "trivial");
+    searchWordsWithPrefix(root, "bacaninha");
 
     return 0;
 }
