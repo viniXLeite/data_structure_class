@@ -1,1 +1,1 @@
-## Projects developed in the data structure subject of the Federal University of Sergipe - BR
+## Projects developed in the Data Structures course at the Federal University of Sergipe, Brazil
